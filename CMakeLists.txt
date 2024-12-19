@@ -73,4 +73,5 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+write_file(${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/package_path.txt "${CMAKE_SOURCE_DIR}")
 ament_package()

@@ -1,8 +1,9 @@
 #include "bagfile_parser_qt/configure_window.hpp"
 
-ConfigureWindow::ConfigureWindow(int width, int height) : QWidget()
+ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std::string &output_path) : QWidget()
 {
     this->resize(width, height);
+    this->output_path = output_path;
 
     this->main_layout = new QGridLayout();
 

@@ -1,6 +1,6 @@
 #include "bagfile_parser_qt/main_window.hpp"
 
-MainWindow::MainWindow(int width, int height) : QWidget()
+MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 {
     this->resize(width, height);
 
@@ -34,6 +34,13 @@ MainWindow::MainWindow(int width, int height) : QWidget()
                      { this->configureParserButtonPushed(); });
 
     this->show();
+
+    this->share_path = ament_index_cpp::get_package_share_directory("bagfile_parser_qt") + "/package_path.txt";
+    std::ifstream file;
+    file.open(share_path.c_str());
+    getline(file, this->output_path);
+    file.close();
+    output_path += "/generated";
 }
 
 MainWindow::~MainWindow()
@@ -72,6 +79,8 @@ void MainWindow::bagSelectButtonPushed()
         reader = new rosbag2_cpp::readers::SequentialReader();
         reader->open(storage_options, converter_options);
         rosbag2_storage::BagMetadata data = reader->get_metadata();
+
+        reader->close();
     }
     else
     {
@@ -82,6 +91,6 @@ void MainWindow::bagSelectButtonPushed()
 
 void MainWindow::configureParserButtonPushed()
 {
-    ConfigureWindow *configure_window = new ConfigureWindow(500, 500);
+    ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path);
     configure_window->show();
 }

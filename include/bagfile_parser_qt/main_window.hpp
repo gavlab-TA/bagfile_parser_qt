@@ -9,6 +9,8 @@
 
 #include "rclcpp/rclcpp.hpp"
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
+#include <fstream>
 
 #include "bagfile_parser_qt/configure_window.hpp"
 
@@ -17,7 +19,7 @@ class MainWindow : public QWidget
     Q_OBJECT
 
     public:
-    MainWindow(int width, int height);
+    MainWindow(const int &width, const int &height);
     ~MainWindow();
 
     private:
@@ -35,6 +37,8 @@ class MainWindow : public QWidget
     void configureParserButtonPushed();
 
     std::string bagfile_path;
+    std::string share_path;
+    std::string output_path;
 };
 
 #endif

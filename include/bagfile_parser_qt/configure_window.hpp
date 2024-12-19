@@ -19,7 +19,7 @@ class ConfigureWindow : public QWidget
     Q_OBJECT
 
     public:
-    ConfigureWindow(int width, int height);
+    ConfigureWindow(const int &width, const int &height, const std::string &output_path);
     ~ConfigureWindow();
 
     private:
@@ -46,6 +46,7 @@ class ConfigureWindow : public QWidget
 
     std::vector<std::pair<std::string, std::string>> packages;
     std::string log_filename;
+    std::string output_path;
 };
 
 #endif
