@@ -13,6 +13,8 @@
 #include <QPushButton>
 #include <QLayout>
 #include <QFileDialog>
+#include <QCoreApplication>
+#include <QMessageBox>
 
 class ConfigureWindow : public QWidget
 {
@@ -37,8 +39,7 @@ class ConfigureWindow : public QWidget
     void addPackageButtonPushed();
     void removePackageButtonPushed();
     void buildWorkspaceButtonPushed();
-    void closeButtonPushed();
-    void clearPacakgesButtonPushed();
+    void clearPackagesButtonPushed();
 
     void getWorkspaceLog();
 
@@ -47,6 +48,9 @@ class ConfigureWindow : public QWidget
     std::vector<std::pair<std::string, std::string>> packages;
     std::string log_filename;
     std::string output_path;
+
+    void buildWorkspace();
+    bool confirmDialog();
 };
 
 #endif

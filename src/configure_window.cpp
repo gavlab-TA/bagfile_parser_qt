@@ -30,7 +30,7 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     QObject::connect(this->build_workspace_button, &QPushButton::released, [=]
                      { this->buildWorkspaceButtonPushed(); });
     QObject::connect(this->clear_packages_button, &QPushButton::released, [=]
-                     { this->clearPacakgesButtonPushed(); });
+                     { this->clearPackagesButtonPushed(); });
 
     this->main_layout->addWidget(this->package_list_title_label, 0, 0, 1, 3, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_list_label, 1, 0, 1, 1, Qt::AlignCenter);
@@ -38,12 +38,13 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     this->main_layout->addWidget(this->add_package_button, 2, 0, Qt::AlignCenter);
     this->main_layout->addWidget(this->remove_package_button, 2, 1, Qt::AlignCenter);
     this->main_layout->addWidget(this->build_workspace_button, 2, 2, Qt::AlignCenter);
-    this->main_layout->addWidget(this->status_label, 3, 0, Qt::AlignCenter);
+    this->main_layout->addWidget(this->status_label, 3, 1, Qt::AlignCenter);
     this->main_layout->addWidget(this->clear_packages_button, 4, 0, Qt::AlignCenter);
 
+    this->main_layout->setContentsMargins(20, 20, 20, 20);
     this->setLayout(main_layout);
 
-    this->log_filename = "workspace_log.txt";
+    this->log_filename = this->output_path + "/workspace_log.txt";
 
     getWorkspaceLog();
 }
@@ -75,12 +76,36 @@ void ConfigureWindow::addPackageButtonPushed()
     package_data.second = full_path;
     packages.push_back(package_data);
 
-    std::ofstream file;
-    file.open(log_filename, std::ios_base::app);
-    std::string output = package_data.first + "," + package_data.second;
-    file << output;
-    file << "\n";
-    file.close();
+    std::string command;
+
+    if (!std::filesystem::exists(output_path + "/src/"))
+    {
+        command = "mkdir -p " + output_path + "/src";
+        if (system(command.c_str()))
+        {
+            std::cout << "Something went wrong with the generated folder file paths. May need to start fresh." << std::endl;
+        }
+    }
+
+    if (package_data.second != "")
+    {
+        command = "ln -s " + package_data.second + " " + output_path + "/src/";
+
+        int res = system(command.c_str());
+        if (res)
+        {
+            std::cout << "Issue adding directory" << std::endl;
+        }
+        else
+        {
+            std::ofstream file;
+            file.open(log_filename, std::ios_base::app);
+            std::string output = package_data.first + "," + package_data.second;
+            file << output;
+            file << "\n";
+            file.close();
+        }
+    }
 
     getWorkspaceLog();
 }
@@ -91,16 +116,76 @@ void ConfigureWindow::removePackageButtonPushed()
 
 void ConfigureWindow::buildWorkspaceButtonPushed()
 {
+    status_label->setText("Building\nPlease Wait...");
+
+    QCoreApplication::processEvents();
+    buildWorkspace();
 }
 
-void ConfigureWindow::clearPacakgesButtonPushed()
+void ConfigureWindow::buildWorkspace()
 {
-    std::ofstream file;
-    file.open(log_filename, std::ios_base::trunc);
-    file.close();
+    std::string command;
+    command = "cd " + output_path + " && colcon build";
 
-    getWorkspaceLog();
-    // TODO: Delete workspace src
+    int res = system(command.c_str());
+    if (res)
+    {
+        std::cout << "Error in building" << std::endl;
+        status_label->setText("Failed");
+    }
+    else
+    {
+        status_label->setText("Message Packages Built Successfully");
+    }
+}
+
+void ConfigureWindow::clearPackagesButtonPushed()
+{
+    if (confirmDialog())
+    {
+        std::ofstream file;
+        file.open(log_filename, std::ios_base::trunc);
+        file.close();
+
+        getWorkspaceLog();
+
+        std::string command;
+        command = "rm -r " + output_path + "/src";
+        if (system(command.c_str()))
+        {
+            std::cout << "Failed to clear the workspace. Did it exist?" << std::endl;
+        }
+
+        if (std::filesystem::exists(output_path + "/install"))
+        {
+            std::cout << "Removing install" << std::endl;
+            command = "rm -r " + output_path + "/install";
+            if (system(command.c_str()))
+            {
+                std::cout << "Failed to delete install" << std::endl;
+            }
+        }
+
+        if (std::filesystem::exists(output_path + "/build"))
+        {
+            std::cout << "Removing build" << std::endl;
+            command = "rm -r " + output_path + "/build";
+            if (system(command.c_str()))
+            {
+                std::cout << "Failed to delete build" << std::endl;
+            }
+        }
+
+        if (std::filesystem::exists(output_path + "/log"))
+        {
+            std::cout << "Removing log" << std::endl;
+            command = "rm -r " + output_path + "/log";
+            if (system(command.c_str()))
+            {
+                std::cout << "Failed to delete log" << std::endl;
+            }
+        }
+    }
 }
 
 void ConfigureWindow::getWorkspaceLog()
@@ -146,4 +231,24 @@ void ConfigureWindow::getWorkspaceLog()
 
     package_list_label->setText(QString(label_text1.c_str()));
     package_path_label->setText(QString(label_text2.c_str()));
+}
+
+bool ConfigureWindow::confirmDialog()
+{
+    QMessageBox msg_box;
+    msg_box.setIcon(QMessageBox::Question);
+    msg_box.setWindowTitle("Warning");
+    msg_box.setText("This will remove all message files. Are you sure?");
+    msg_box.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msg_box.setDefaultButton(QMessageBox::Cancel);
+
+    int result = msg_box.exec();
+    if (result == QMessageBox::Yes)
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
 }
