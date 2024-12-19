@@ -23,6 +23,7 @@ include_directories(include)
 set(MOC_HEADERS
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/main_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/configure_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/remove_packages_window.hpp
 )
 
 # List to store the generated moc files
@@ -31,12 +32,15 @@ set(MOC_SOURCES)
 # Generate MOC files for each header in MOC_HEADERS
 foreach(HEADER ${MOC_HEADERS})
   get_filename_component(HEADER_NAME ${HEADER} NAME_WE)
-  set(MOC_FILE src/moc/moc_${HEADER_NAME}.cpp)
+  set(MOC_FILE "${CMAKE_SOURCE_DIR}/src/moc/moc_${HEADER_NAME}.cpp")
+
+  # Ensure the moc directory exists
+  file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/src/moc)
 
   # Add the custom command to generate the moc file for each header
   add_custom_command(
     OUTPUT ${MOC_FILE}
-    COMMAND moc ${HEADER} -o ${CMAKE_SOURCE_DIR}/${MOC_FILE}
+    COMMAND moc ${HEADER} -o ${MOC_FILE}
     DEPENDS ${HEADER}
     COMMENT "Generating MOC file for ${HEADER}"
   )
@@ -48,11 +52,13 @@ endforeach()
 set(MOC_SOURCES
   ${CMAKE_SOURCE_DIR}/src/moc/moc_main_window.cpp
   ${CMAKE_SOURCE_DIR}/src/moc/moc_configure_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/moc/moc_remove_packages_window.cpp
 )
 
 set(WINDOW_SRCS 
   src/main_window.cpp
   src/configure_window.cpp
+  src/remove_packages_window.cpp
 )
 
 add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES})

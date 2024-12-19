@@ -16,6 +16,8 @@
 #include <QCoreApplication>
 #include <QMessageBox>
 
+#include "bagfile_parser_qt/remove_packages_window.hpp"
+
 class ConfigureWindow : public QWidget
 {
     Q_OBJECT

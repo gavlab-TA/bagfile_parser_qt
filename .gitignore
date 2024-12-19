@@ -1,1 +1,6 @@
 .vscode
+src/moc/
+generated/build
+generated/install
+generated/src
+generated/workspace_log

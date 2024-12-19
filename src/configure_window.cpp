@@ -112,6 +112,8 @@ void ConfigureWindow::addPackageButtonPushed()
 
 void ConfigureWindow::removePackageButtonPushed()
 {
+    RemovePackagesWindow *window = new RemovePackagesWindow(500, 500, log_filename);
+    window->show();
 }
 
 void ConfigureWindow::buildWorkspaceButtonPushed()
