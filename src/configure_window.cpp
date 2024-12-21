@@ -4,15 +4,21 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
 {
     this->resize(width, height);
     this->output_path = output_path;
+    this->setWindowTitle("Parser External Dependencies");
 
     this->main_layout = new QGridLayout();
+    this->button_layout = new QHBoxLayout();
 
     this->package_list_label = new QLabel();
     this->status_label = new QLabel();
     this->package_path_label = new QLabel();
     this->package_list_title_label = new QLabel();
-    this->package_list_title_label->setText("Tracked Message Packages");
-    this->package_list_title_label->setFont(QFont("Sans Serif", 20));
+    this->package_path_title_label = new QLabel();
+
+    this->package_list_title_label->setText("Package Names");
+    this->package_list_title_label->setFont(QFont("Sans Serif", 14));
+    this->package_path_title_label->setText("Package Paths");
+    this->package_path_title_label->setFont(QFont("Sans Serif", 14));
 
     this->add_package_button = new QPushButton();
     this->add_package_button->setText("Add Msg Pkg");
@@ -28,13 +34,15 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     QObject::connect(this->build_workspace_button, &QPushButton::released, this, &ConfigureWindow::buildWorkspace);
     QObject::connect(this->clear_packages_button, &QPushButton::released, this, &ConfigureWindow::clearPackages);
 
-    this->main_layout->addWidget(this->package_list_title_label, 0, 0, 1, 3, Qt::AlignCenter);
+    this->main_layout->addWidget(this->package_list_title_label, 0, 0, 1, 1, Qt::AlignCenter);
+    this->main_layout->addWidget(this->package_path_title_label, 0, 2, 1, 3, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_list_label, 1, 0, 1, 1, Qt::AlignCenter);
-    this->main_layout->addWidget(this->package_path_label, 1, 1, 1, 2, Qt::AlignCenter);
-    this->main_layout->addWidget(this->add_package_button, 2, 0, Qt::AlignCenter);
-    this->main_layout->addWidget(this->remove_package_button, 2, 1, Qt::AlignCenter);
-    this->main_layout->addWidget(this->build_workspace_button, 2, 2, Qt::AlignCenter);
-    this->main_layout->addWidget(this->status_label, 3, 1, Qt::AlignCenter);
+    this->main_layout->addWidget(this->package_path_label, 1, 2, 1, 3, Qt::AlignCenter);
+    this->button_layout->addWidget(this->add_package_button, Qt::AlignCenter);
+    this->button_layout->addWidget(this->remove_package_button, Qt::AlignCenter);
+    this->button_layout->addWidget(this->build_workspace_button, Qt::AlignCenter);
+    this->main_layout->addLayout(this->button_layout, 2, 0, 1, 5, Qt::AlignCenter);
+    this->main_layout->addWidget(this->status_label, 3, 2, Qt::AlignCenter);
     this->main_layout->addWidget(this->clear_packages_button, 4, 0, Qt::AlignCenter);
 
     this->main_layout->setContentsMargins(20, 20, 20, 20);

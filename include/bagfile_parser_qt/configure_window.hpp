@@ -28,6 +28,8 @@ class ConfigureWindow : public QWidget
 
     private:
     QGridLayout* main_layout;
+    QHBoxLayout* button_layout;
+
     QPushButton* add_package_button;
     QPushButton* remove_package_button;
     QPushButton* build_workspace_button;
@@ -35,6 +37,7 @@ class ConfigureWindow : public QWidget
     
     QLabel* status_label;
     QLabel* package_list_title_label;
+    QLabel* package_path_title_label;
     QLabel* package_list_label;
     QLabel* package_path_label;
 

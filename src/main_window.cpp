@@ -19,10 +19,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->configure_parser_button = new QPushButton();
     this->configure_parser_button->setText("Configure Message Dependencies");
 
-    //this->status_label = new QLabel();
-
     this->workflow_layout->addLayout(this->bag_select_layout);
-    //this->workflow_layout->addWidget(this->status_label);
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
@@ -38,7 +35,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     file.open(share_path.c_str());
     getline(file, this->output_path);
     file.close();
-    output_path += "/generated";
+    this->output_path += "/generated";
 }
 
 MainWindow::~MainWindow()
