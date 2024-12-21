@@ -48,7 +48,7 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     this->main_layout->setContentsMargins(20, 20, 20, 20);
     this->setLayout(main_layout);
 
-    this->log_filename = this->output_path + "/workspace_log.txt";
+    this->log_filename = this->output_path + "/files/workspace_log.txt";
 
     getWorkspaceLog();
 }

@@ -13,6 +13,7 @@
 #include <fstream>
 
 #include "bagfile_parser_qt/configure_window.hpp"
+#include "bagfile_parser_qt/select_topics_window.hpp"
 
 class MainWindow : public QWidget
 {
@@ -37,6 +38,8 @@ class MainWindow : public QWidget
     std::string bagfile_path;
     std::string share_path;
     std::string output_path;
+
+    rosbag2_storage::BagMetadata data;
 
     bool bag_selected;
 

@@ -60,7 +60,7 @@ MainWindow::~MainWindow()
 void MainWindow::openBagSelectWindow()
 {
     QWidget w;
-    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "/home/kyle/Data/Vegas2025_data/2024-12-16_VEGAS_run5", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     bagfile_path = path.toStdString();
 
     if (bagfile_path != "")
@@ -81,7 +81,7 @@ void MainWindow::openBagSelectWindow()
 
         reader = new rosbag2_cpp::readers::SequentialReader();
         reader->open(storage_options, converter_options);
-        rosbag2_storage::BagMetadata data = reader->get_metadata();
+        data = reader->get_metadata();
 
         reader->close();
 
@@ -102,5 +102,6 @@ void MainWindow::openConfigureParserWindow()
 
 void MainWindow::openSelectTopicsWindow()
 {
-    std::cout<<"test"<<std::endl;
+    SelectTopicsWindow topics_window(500, 500, data, output_path, this);
+    topics_window.exec();
 }

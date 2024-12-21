@@ -24,6 +24,7 @@ set(MOC_HEADERS
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/main_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/configure_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/remove_packages_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/select_topics_window.hpp
 )
 
 # List to store the generated moc files
@@ -53,12 +54,14 @@ set(MOC_SOURCES
   ${CMAKE_SOURCE_DIR}/src/moc/moc_main_window.cpp
   ${CMAKE_SOURCE_DIR}/src/moc/moc_configure_window.cpp
   ${CMAKE_SOURCE_DIR}/src/moc/moc_remove_packages_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/moc/moc_select_topics_window.cpp
 )
 
 set(WINDOW_SRCS 
   src/main_window.cpp
   src/configure_window.cpp
   src/remove_packages_window.cpp
+  src/select_topics_window.cpp
 )
 
 add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES})
