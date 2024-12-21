@@ -39,7 +39,6 @@ class ConfigureWindow : public QWidget
     QLabel* package_path_label;
 
     void addPackageButtonPushed();
-    void removePackageButtonPushed();
     void buildWorkspaceButtonPushed();
     void clearPackagesButtonPushed();
 
@@ -53,6 +52,9 @@ class ConfigureWindow : public QWidget
 
     void buildWorkspace();
     bool confirmDialog();
+
+    private slots:
+    void openRemoveWindow();
 };
 
 #endif

@@ -25,8 +25,7 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
 
     QObject::connect(this->add_package_button, &QPushButton::released, [=]
                      { this->addPackageButtonPushed(); });
-    QObject::connect(this->remove_package_button, &QPushButton::released, [=]
-                     { this->removePackageButtonPushed(); });
+    QObject::connect(this->remove_package_button, &QPushButton::released, this, &ConfigureWindow::openRemoveWindow);
     QObject::connect(this->build_workspace_button, &QPushButton::released, [=]
                      { this->buildWorkspaceButtonPushed(); });
     QObject::connect(this->clear_packages_button, &QPushButton::released, [=]
@@ -110,10 +109,10 @@ void ConfigureWindow::addPackageButtonPushed()
     getWorkspaceLog();
 }
 
-void ConfigureWindow::removePackageButtonPushed()
+void ConfigureWindow::openRemoveWindow()
 {
-    RemovePackagesWindow *window = new RemovePackagesWindow(500, 500, log_filename);
-    window->show();
+    RemovePackagesWindow window(500, 500, log_filename, output_path, this);
+    window.exec();
 }
 
 void ConfigureWindow::buildWorkspaceButtonPushed()

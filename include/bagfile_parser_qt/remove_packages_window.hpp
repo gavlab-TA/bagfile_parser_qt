@@ -11,18 +11,26 @@
 #include <QListWidget>
 #include <QListWidgetItem>
 #include <QVBoxLayout>
+#include <QPushButton>
+#include <QDialog>
 
-class RemovePackagesWindow : public QWidget
+class RemovePackagesWindow : public QDialog
 {
     Q_OBJECT
 
     public:
-    RemovePackagesWindow(const int &width, const int &height, const std::string &package_log_filename);
+    RemovePackagesWindow(const int &width, const int &height, const std::string &package_log_filename, const std::string &output_path, QWidget *parent = nullptr);
     ~RemovePackagesWindow();
 
     private:
     QListWidget *list_widget;
+    QPushButton *remove_button;
 
+    std::string package_log_filename;
+    std::string output_path;
+
+    void initialize();
+    void removeButtonPushed();
 };
 
 #endif
