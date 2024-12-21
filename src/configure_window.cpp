@@ -110,6 +110,8 @@ void ConfigureWindow::openRemoveWindow()
 {
     RemovePackagesWindow window(500, 500, log_filename, output_path, this);
     window.exec();
+
+    getWorkspaceLog();
 }
 
 void ConfigureWindow::buildWorkspace()
