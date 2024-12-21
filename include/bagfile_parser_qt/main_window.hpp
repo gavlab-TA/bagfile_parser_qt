@@ -32,14 +32,18 @@ class MainWindow : public QWidget
     QLabel* status_label;
     
     QPushButton* configure_parser_button;
+    QPushButton* select_topics_button;
 
     std::string bagfile_path;
     std::string share_path;
     std::string output_path;
 
+    bool bag_selected;
+
     private slots:
     void openBagSelectWindow();
     void openConfigureParserWindow();
+    void openSelectTopicsWindow();
 };
 
 #endif

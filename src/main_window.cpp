@@ -19,7 +19,14 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->configure_parser_button = new QPushButton();
     this->configure_parser_button->setText("Configure Message Dependencies");
 
+    this->select_topics_button = new QPushButton();
+    this->select_topics_button->setText("Select Topics to Parse");
+
+    bag_selected = false;
+
+
     this->workflow_layout->addLayout(this->bag_select_layout);
+    this->workflow_layout->addWidget(this->select_topics_button);
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
@@ -27,6 +34,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     QObject::connect(this->bag_select_button, &QPushButton::released, this, &MainWindow::openBagSelectWindow);
     QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
+    QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
 
     this->show();
 
@@ -76,6 +84,8 @@ void MainWindow::openBagSelectWindow()
         rosbag2_storage::BagMetadata data = reader->get_metadata();
 
         reader->close();
+
+        bag_selected = true;
     }
     else
     {
@@ -88,4 +98,9 @@ void MainWindow::openConfigureParserWindow()
 {
     ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path);
     configure_window->show();
+}
+
+void MainWindow::openSelectTopicsWindow()
+{
+    std::cout<<"test"<<std::endl;
 }
