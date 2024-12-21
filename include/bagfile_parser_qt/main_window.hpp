@@ -33,12 +33,13 @@ class MainWindow : public QWidget
     
     QPushButton* configure_parser_button;
 
-    void bagSelectButtonPushed();
-    void configureParserButtonPushed();
-
     std::string bagfile_path;
     std::string share_path;
     std::string output_path;
+
+    private slots:
+    void openBagSelectWindow();
+    void openConfigureParserWindow();
 };
 
 #endif

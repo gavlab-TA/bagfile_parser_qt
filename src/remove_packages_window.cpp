@@ -50,15 +50,14 @@ void RemovePackagesWindow::initialize()
     remove_button = new QPushButton();
     remove_button->setText("Remove Selected Packages");
 
-    QObject::connect(remove_button, &QPushButton::released, [=]
-                     { removeButtonPushed(); });
+    QObject::connect(remove_button, &QPushButton::released, this, &RemovePackagesWindow::removeSelected);
 
     layout->addWidget(remove_button);
 
     this->setLayout(layout);
 }
 
-void RemovePackagesWindow::removeButtonPushed()
+void RemovePackagesWindow::removeSelected()
 {
     std::vector<int> remove_indices;
     for (int i = 0; i < list_widget->count(); ++i)

@@ -38,10 +38,6 @@ class ConfigureWindow : public QWidget
     QLabel* package_list_label;
     QLabel* package_path_label;
 
-    void addPackageButtonPushed();
-    void buildWorkspaceButtonPushed();
-    void clearPackagesButtonPushed();
-
     void getWorkspaceLog();
 
     std::fstream file;
@@ -50,11 +46,14 @@ class ConfigureWindow : public QWidget
     std::string log_filename;
     std::string output_path;
 
-    void buildWorkspace();
     bool confirmDialog();
+    void runBuild();
 
     private slots:
     void openRemoveWindow();
+    void clearPackages();
+    void openAddPackageWindow();
+    void buildWorkspace();
 };
 
 #endif

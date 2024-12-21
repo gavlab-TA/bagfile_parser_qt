@@ -23,13 +23,10 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     this->clear_packages_button = new QPushButton();
     this->clear_packages_button->setText("Reset Workspace");
 
-    QObject::connect(this->add_package_button, &QPushButton::released, [=]
-                     { this->addPackageButtonPushed(); });
+    QObject::connect(this->add_package_button, &QPushButton::released, this, &ConfigureWindow::openAddPackageWindow);
     QObject::connect(this->remove_package_button, &QPushButton::released, this, &ConfigureWindow::openRemoveWindow);
-    QObject::connect(this->build_workspace_button, &QPushButton::released, [=]
-                     { this->buildWorkspaceButtonPushed(); });
-    QObject::connect(this->clear_packages_button, &QPushButton::released, [=]
-                     { this->clearPackagesButtonPushed(); });
+    QObject::connect(this->build_workspace_button, &QPushButton::released, this, &ConfigureWindow::buildWorkspace);
+    QObject::connect(this->clear_packages_button, &QPushButton::released, this, &ConfigureWindow::clearPackages);
 
     this->main_layout->addWidget(this->package_list_title_label, 0, 0, 1, 3, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_list_label, 1, 0, 1, 1, Qt::AlignCenter);
@@ -61,7 +58,7 @@ ConfigureWindow::~ConfigureWindow()
     delete package_path_label;
 }
 
-void ConfigureWindow::addPackageButtonPushed()
+void ConfigureWindow::openAddPackageWindow()
 {
     QWidget w;
     QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -115,15 +112,15 @@ void ConfigureWindow::openRemoveWindow()
     window.exec();
 }
 
-void ConfigureWindow::buildWorkspaceButtonPushed()
+void ConfigureWindow::buildWorkspace()
 {
     status_label->setText("Building\nPlease Wait...");
 
     QCoreApplication::processEvents();
-    buildWorkspace();
+    runBuild();
 }
 
-void ConfigureWindow::buildWorkspace()
+void ConfigureWindow::runBuild()
 {
     std::string command;
     command = "cd " + output_path + " && colcon build";
@@ -140,7 +137,7 @@ void ConfigureWindow::buildWorkspace()
     }
 }
 
-void ConfigureWindow::clearPackagesButtonPushed()
+void ConfigureWindow::clearPackages()
 {
     if (confirmDialog())
     {

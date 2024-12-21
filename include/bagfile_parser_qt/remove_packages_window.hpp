@@ -30,7 +30,9 @@ class RemovePackagesWindow : public QDialog
     std::string output_path;
 
     void initialize();
-    void removeButtonPushed();
+
+    private slots:
+    void removeSelected();
 };
 
 #endif

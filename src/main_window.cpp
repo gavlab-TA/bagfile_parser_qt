@@ -28,10 +28,8 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     this->setLayout(this->main_layout);
 
-    QObject::connect(this->bag_select_button, &QPushButton::released, [=]
-                     { this->bagSelectButtonPushed(); });
-    QObject::connect(this->configure_parser_button, &QPushButton::released, [=]
-                     { this->configureParserButtonPushed(); });
+    QObject::connect(this->bag_select_button, &QPushButton::released, this, &MainWindow::openBagSelectWindow);
+    QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
 
     this->show();
 
@@ -54,7 +52,7 @@ MainWindow::~MainWindow()
     delete configure_parser_button;
 }
 
-void MainWindow::bagSelectButtonPushed()
+void MainWindow::openBagSelectWindow()
 {
     QWidget w;
     QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -89,7 +87,7 @@ void MainWindow::bagSelectButtonPushed()
     // TODO: DISPLAY TOPICS AND MESSAGES
 }
 
-void MainWindow::configureParserButtonPushed()
+void MainWindow::openConfigureParserWindow()
 {
     ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path);
     configure_window->show();
