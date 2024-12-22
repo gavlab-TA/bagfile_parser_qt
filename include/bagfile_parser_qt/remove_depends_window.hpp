@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include <fstream>
+#include <iostream>
 
 class RemoveDependsWindow : public QDialog
 {

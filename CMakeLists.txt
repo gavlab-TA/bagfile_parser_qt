@@ -16,6 +16,7 @@ find_package(ament_cmake REQUIRED)
 find_package(rosbag2_cpp REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Boost REQUIRED COMPONENTS filesystem system)
 
 include_directories(include)
 
@@ -77,7 +78,7 @@ set(WINDOW_SRCS
 )
 
 add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES})
-target_link_libraries(bagfile_parser_qt Qt5::Widgets Qt5::Core)
+target_link_libraries(bagfile_parser_qt Qt5::Widgets Qt5::Core Boost::filesystem Boost::system)
 
 ament_target_dependencies(bagfile_parser_qt rclcpp rosbag2_cpp)
 

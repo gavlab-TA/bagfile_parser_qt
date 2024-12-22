@@ -11,6 +11,7 @@
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <fstream>
+#include <boost/filesystem.hpp>
 
 #include "bagfile_parser_qt/configure_window.hpp"
 #include "bagfile_parser_qt/select_topics_window.hpp"

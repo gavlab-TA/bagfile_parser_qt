@@ -49,6 +49,17 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     getline(file, this->output_path);
     file.close();
     this->output_path += "/generated";
+
+    std::string files_dir = output_path + "/files/";
+    if (!boost::filesystem::exists(files_dir.c_str()))
+    {
+        std::string command = "mkdir -p " + files_dir;
+        int res = system(command.c_str());
+        if (res)
+        {
+            std::cout<<"Issue creating logfile space"<<std::endl;
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -113,6 +124,6 @@ void MainWindow::openSelectTopicsWindow()
 
 void MainWindow::openConfigureDependsWindow()
 {
-    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path, data); 
+    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path); 
     dependency_window->show();
 }

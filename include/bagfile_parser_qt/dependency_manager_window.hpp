@@ -10,6 +10,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <boost/algorithm/string.hpp>
+#include <filesystem>
 
 #include "bagfile_parser_qt/recommended_depends_window.hpp"
 #include "bagfile_parser_qt/string_display_window.hpp"
@@ -20,7 +21,7 @@ class DependencyManagerWindow : public QWidget
     Q_OBJECT
 
     public:
-    DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, const rosbag2_storage::BagMetadata &data, QWidget *parent = nullptr);
+    DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, QWidget *parent = nullptr);
     ~DependencyManagerWindow();
 
     private:
@@ -35,11 +36,12 @@ class DependencyManagerWindow : public QWidget
     std::vector<std::string> packages;
     std::vector<std::string> bag_packages;
     std::string output_path;
-    rosbag2_storage::BagMetadata data;
+    std::vector<std::pair<std::string, std::string>> data;
 
 
     void cleanupDependsFile();
     void getBagPackages();
+    void getData();
 
     bool vectorContains(const std::vector<std::string> &vec, const std::string &val);
     bool confirmDialog();

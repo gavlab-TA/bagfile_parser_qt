@@ -22,12 +22,13 @@ void RemoveDependsWindow::initialize()
     std::ifstream file;
     file.open(depends_filename);
 
+
     while (!file.eof())
     {
         std::string line;
         getline(file, line);
 
-        if (line.length() < 1)
+        if (line.length() > 1)
         {
             QListWidgetItem *item = new QListWidgetItem(QString(line.c_str()));
             item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
@@ -52,7 +53,7 @@ void RemoveDependsWindow::removeSelected()
 
     for (int i = 0; i < list_widget->count(); ++i)
     {
-        if (list_widget->item(i)->checkState() == Qt::Checked)
+        if (list_widget->item(i)->checkState() == Qt::Unchecked)
         {
             std::string line;
             line = list_widget->item(i)->text().toStdString();
@@ -61,4 +62,5 @@ void RemoveDependsWindow::removeSelected()
         }
     }
     file.close();    
+    this->close();
 }
