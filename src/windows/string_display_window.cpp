@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/string_display_window.hpp"
+#include "bagfile_parser_qt/windows/string_display_window.hpp"
 
 StringDisplayWindow::StringDisplayWindow(const std::vector<std::string> &strings, const std::string &title, QWidget *parent) : QDialog(parent)
 {

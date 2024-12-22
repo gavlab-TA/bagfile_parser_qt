@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/main_window.hpp"
+#include "bagfile_parser_qt/windows/main_window.hpp"
 
 MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 {

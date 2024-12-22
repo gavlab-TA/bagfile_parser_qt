@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/remove_depends_window.hpp"
+#include "bagfile_parser_qt/windows/remove_depends_window.hpp"
 
 RemoveDependsWindow::RemoveDependsWindow(const std::string &depends_file, QWidget *parent) : QDialog(parent)
 {

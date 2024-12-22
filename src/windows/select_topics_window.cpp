@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/select_topics_window.hpp"
+#include "bagfile_parser_qt/windows/select_topics_window.hpp"
 
 SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, const rosbag2_storage::BagMetadata &data, const std::string &output_path, QWidget *parent) : QDialog(parent)
 {

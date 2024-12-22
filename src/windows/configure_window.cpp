@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/configure_window.hpp"
+#include "bagfile_parser_qt/windows/configure_window.hpp"
 
 ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std::string &output_path) : QWidget()
 {

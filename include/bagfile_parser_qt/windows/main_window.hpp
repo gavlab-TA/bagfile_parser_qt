@@ -13,9 +13,9 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
-#include "bagfile_parser_qt/configure_window.hpp"
-#include "bagfile_parser_qt/select_topics_window.hpp"
-#include "bagfile_parser_qt/dependency_manager_window.hpp"
+#include "bagfile_parser_qt/windows/configure_window.hpp"
+#include "bagfile_parser_qt/windows/select_topics_window.hpp"
+#include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
 
 class MainWindow : public QWidget
 {

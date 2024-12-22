@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/recommended_depends_window.hpp"
+#include "bagfile_parser_qt/windows/recommended_depends_window.hpp"
 
 RecommendedDependsWindow::RecommendedDependsWindow(const std::vector<std::string> &recommended_depends, const std::string &output_path, QWidget *parent) : QDialog(parent)
 {

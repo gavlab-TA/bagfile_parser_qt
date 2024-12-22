@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/dependency_manager_window.hpp"
+#include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
 
 DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, QWidget *parent) : QWidget(parent)
 {

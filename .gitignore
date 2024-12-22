@@ -1,5 +1,5 @@
 .vscode
-src/moc/
+src/windows/moc/
 generated/build
 generated/install
 generated/src

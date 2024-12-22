@@ -12,9 +12,9 @@
 #include <boost/algorithm/string.hpp>
 #include <filesystem>
 
-#include "bagfile_parser_qt/recommended_depends_window.hpp"
-#include "bagfile_parser_qt/string_display_window.hpp"
-#include "bagfile_parser_qt/remove_depends_window.hpp"
+#include "bagfile_parser_qt/windows/recommended_depends_window.hpp"
+#include "bagfile_parser_qt/windows/string_display_window.hpp"
+#include "bagfile_parser_qt/windows/remove_depends_window.hpp"
 
 class DependencyManagerWindow : public QWidget
 {

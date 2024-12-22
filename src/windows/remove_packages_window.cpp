@@ -1,4 +1,4 @@
-#include "bagfile_parser_qt/remove_packages_window.hpp"
+#include "bagfile_parser_qt/windows/remove_packages_window.hpp"
 
 RemovePackagesWindow::RemovePackagesWindow(const int &width, const int &height, const std::string &package_log_filename, const std::string &output_path, QWidget *parent) : QDialog(parent)
 {
