@@ -28,6 +28,8 @@ class BagAnalyzer
     std::string formatMessageTypes(std::string input);
     std::string camelToSnake(std::string input);
     bool checkAllUpper(const std::string &input);
+    void cleanupFile(const std::string &filename);
+    bool vectorContains(const std::vector<std::string> &vec, const std::string &val);
 };
 
 #endif

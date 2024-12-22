@@ -162,5 +162,5 @@ void MainWindow::openConfigureDependsWindow()
 void MainWindow::autoconfigureGenerator()
 {
     BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
-    //MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
+    MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
 }

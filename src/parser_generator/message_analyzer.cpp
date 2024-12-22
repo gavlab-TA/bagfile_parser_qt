@@ -397,13 +397,10 @@ void MessageAnalyzer::cleanupExtraSpaces(const std::vector<std::string> &message
         output = std::stringstream("");
         output_lines.clear();
         filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
-        std::cout<<message_types.at(i)<<std::endl;
-        std::cout<<i<<std::endl;
         file.open(filename);
         while (!file.eof())
         {
             getline(file, buffer);
-            std::cout<<buffer<<std::endl;
             bool passed_starting_spaces = false;
             bool passed_field_type = false;
             for (size_t i = 0; i < buffer.length(); i++)
@@ -550,8 +547,6 @@ void MessageAnalyzer::setupFieldNamespaces(const std::vector<std::string> &messa
         output_lines.clear();
         current_namespace.clear();
 
-        std::cout<<filename<<std::endl;
-
         while (!file.eof())
         {
             getline(file, buffer);
@@ -656,7 +651,7 @@ void MessageAnalyzer::applyArraysToSubFields(const std::vector<std::string> &mes
     int line;
     int array_level;
 
-    //int lines;
+    int lines;
     int max_level;
 
     for (size_t i = 0; i < message_types.size(); i++)
@@ -682,10 +677,12 @@ void MessageAnalyzer::applyArraysToSubFields(const std::vector<std::string> &mes
             }
         }
         file.close();
-        //lines = levels.size();
+        lines = levels.size();
 
         // 2nd pass - get array layout data
-        std::vector<std::vector<int>>layout_data;
+        //int layout_data[lines][max_level + 1];
+        std::vector<std::vector<int>> layout_data(lines, std::vector<int>(max_level + 1, 0));
+
         file.open(filename);
         levels.clear();
         line = 0;

@@ -141,4 +141,51 @@ void BagAnalyzer::generateParserData()
     topic_data_file.clear();
     message_type_file.close();
     message_name_file.close();
+
+    cleanupFile(output_path + "/files/parser_files/topic_names.txt");
+    cleanupFile(output_path + "/files/parser_files/topic_data.txt");
+    cleanupFile(output_path + "/files/parser_files/message_names.txt");
+    cleanupFile(output_path + "/files/parser_files/message_types.txt");
+}
+
+void BagAnalyzer::cleanupFile(const std::string &filename)
+{
+    std::ifstream in_file;
+    in_file.open(filename);
+
+    std::vector<std::string> lines;
+    while (!in_file.eof())
+    {
+        std::string line;
+        getline(in_file, line);
+        if (!vectorContains(lines, line))
+        {
+            lines.push_back(line);
+        }
+    }
+
+    in_file.close();
+
+    std::ofstream out_file;
+    out_file.open(filename, std::ios_base::trunc);
+    for (const std::string &line : lines)
+    {
+        out_file << line;
+        out_file << "\n";
+    }
+
+    out_file.close();
+    
+}
+
+bool BagAnalyzer::vectorContains(const std::vector<std::string> &vec, const std::string &val)
+{
+    for (const std::string &item : vec)
+    {
+        if (val == item)
+        {
+            return true;
+        }
+    }
+    return false;
 }
