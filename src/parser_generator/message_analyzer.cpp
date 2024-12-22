@@ -1,12 +1,15 @@
-#include "message_analyzer.hpp"
+#include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
 
-MessageAnalyzer::MessageAnalyzer(const std::string &parser_files_path)
+MessageAnalyzer::MessageAnalyzer(const std::string &parser_files_path, const std::string &output_path)
 {
     this->parser_files_path = parser_files_path;
+    this->output_path = output_path;
 
     std::vector<std::string> message_types;
     std::ifstream message_names_file;
-    message_names_file.open("../config/message_names.txt");
+    std::string filename = this->parser_files_path + "message_names.txt";
+    message_names_file.open(filename);
+
     std::string temp;
     while (!message_names_file.eof())
     {
@@ -69,7 +72,7 @@ MessageAnalyzer::~MessageAnalyzer()
 
 std::string MessageAnalyzer::messageTypesToSnake(std::string str)
 {
-    for (int i = 0; i < str.length(); i++)
+    for (size_t i = 0; i < str.length(); i++)
     {
         if (str.at(i) == '/')
         {
@@ -102,14 +105,18 @@ void MessageAnalyzer::makeLogs(const std::vector<std::string> &message_types)
     int system_status;
     std::string command;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
-        command = "touch ../msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        command = "touch " + parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         system_status = system(command.c_str());
 
-        command = "ros2 interface show " + message_types.at(i) + " > ../msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        command = "bash -c 'source " + output_path + "/install/setup.bash && " + "ros2 interface show " + message_types.at(i) + " > " + parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log'";
         std::cout << "Pulling ROS Message Data: " << std::to_string(i + 1) << "/" << std::to_string(message_types.size()) << std::endl;
         system_status = system(command.c_str());
+        if (system_status)
+        {
+            std::cout<<"Failed to pull: " << message_types.at(i) << std::endl;
+        }
     }
 }
 
@@ -184,7 +191,7 @@ bool MessageAnalyzer::checkNativeMessageTypes(const std::string &str)
 std::stringstream MessageAnalyzer::loadOutput(const std::vector<std::string> &output_line)
 {
 std::stringstream output("");
-    for (int i = 0; i < output_line.size(); i++)
+    for (size_t i = 0; i < output_line.size(); i++)
     {
         if (i == output_line.size() - 1)
         {
@@ -205,17 +212,17 @@ void MessageAnalyzer::decomment(const std::vector<std::string> &message_types)
     std::string buffer;
     std::vector<std::string> output_line;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output_line.clear();
 
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         while (!file.eof())
         {
             getline(file, buffer);
 
-            for (int i = 0; i < buffer.length(); i++)
+            for (size_t i = 0; i < buffer.length(); i++)
             {
                 if (buffer.at(i) == '#')
                 {
@@ -236,7 +243,7 @@ void MessageAnalyzer::decomment(const std::vector<std::string> &message_types)
 
 bool MessageAnalyzer::checkBlankString(const std::string &line)
 {
-for (int i = 0; i < line.length(); i++)
+for (size_t i = 0; i < line.length(); i++)
     {
         if (line.at(i) != ' ' && line.at(i) != '\t')
         {
@@ -253,11 +260,11 @@ void MessageAnalyzer::deblank(const std::vector<std::string> &message_types)
     std::vector<std::string> output_lines;
     std::string buffer;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output_lines.clear();
 
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         while (!file.eof())
         {
@@ -293,7 +300,7 @@ bool MessageAnalyzer::checkForCapitalWord(const std::string &line)
 {
 bool on_capital_word = false;
     bool looking_for_word = true;
-    for (int i = 0; i < line.length(); i++)
+    for (size_t i = 0; i < line.length(); i++)
     {
         if ((line.at(i) == ' ' || line.at(i) == '\t' || line.at(i) == '=') && on_capital_word)
         {
@@ -337,11 +344,11 @@ void MessageAnalyzer::removeOptions(const std::vector<std::string> &message_type
     std::vector<std::string> output_line;
     std::vector<std::string> split_string;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
         output_line.clear();
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         while (!file.eof())
         {
@@ -350,12 +357,12 @@ void MessageAnalyzer::removeOptions(const std::vector<std::string> &message_type
             boost::split(split_string, buffer, boost::is_any_of(" "));
             if (split_string.size()>0)
             {
-                for (int j = 0; j < split_string.at(0).length(); j++)
+                for (size_t j = 0; j < split_string.at(0).length(); j++)
                 {
                     split_string.at(0).at(j) = tolower(split_string.at(0).at(j));
                 }
                 buffer = "";
-                for (int j = 0; j < split_string.size(); j++)
+                for (size_t j = 0; j < split_string.size(); j++)
                 {
                     buffer += split_string.at(j) + " ";
                 }
@@ -385,18 +392,21 @@ void MessageAnalyzer::cleanupExtraSpaces(const std::vector<std::string> &message
     std::string buffer;
     std::vector<std::string> output_lines;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
         output_lines.clear();
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        std::cout<<message_types.at(i)<<std::endl;
+        std::cout<<i<<std::endl;
         file.open(filename);
         while (!file.eof())
         {
             getline(file, buffer);
+            std::cout<<buffer<<std::endl;
             bool passed_starting_spaces = false;
             bool passed_field_type = false;
-            for (int i = 0; i < buffer.length(); i++)
+            for (size_t i = 0; i < buffer.length(); i++)
             {
                 if ((buffer.at(i) != ' ' || buffer.at(i) != '\t') && !passed_starting_spaces)
                 {
@@ -439,9 +449,9 @@ void MessageAnalyzer::collapseTabs(const std::vector<std::string> &message_types
     std::string buffer;
     std::vector<std::string> output_lines;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output = std::stringstream("");
         output_lines.clear();
@@ -449,7 +459,7 @@ void MessageAnalyzer::collapseTabs(const std::vector<std::string> &message_types
         while (!file.eof())
         {
             getline(file, buffer);
-            for (int i = 0; i < buffer.length(); i++)
+            for (size_t i = 0; i < buffer.length(); i++)
             {
                 while (buffer.at(i) == '\t')
                 {
@@ -476,9 +486,9 @@ void MessageAnalyzer::prepForSplit(const std::vector<std::string> &message_types
     std::string buffer;
     std::vector<std::string> output_lines;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output = std::stringstream("");
         output_lines.clear();
@@ -486,7 +496,7 @@ void MessageAnalyzer::prepForSplit(const std::vector<std::string> &message_types
         while (!file.eof())
         {
             getline(file, buffer);
-            for (int i = 0; i < buffer.length(); i++)
+            for (size_t i = 0; i < buffer.length(); i++)
             {
                 if (buffer.at(i) != '!')
                 {
@@ -509,10 +519,9 @@ void MessageAnalyzer::prepForSplit(const std::vector<std::string> &message_types
 
 bool MessageAnalyzer::checkForArray(const std::string &str)
 {
-for (int i = 0; i < str.length(); i++)
+for (size_t i = 0; i < str.length(); i++)
     {
         if (str.at(i) == '[')
-            ;
         {
             return true;
         }
@@ -533,9 +542,9 @@ void MessageAnalyzer::setupFieldNamespaces(const std::vector<std::string> &messa
 
     std::string temp;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output = std::stringstream("");
         output_lines.clear();
@@ -557,7 +566,7 @@ void MessageAnalyzer::setupFieldNamespaces(const std::vector<std::string> &messa
                 }
                 current_namespace.at(split_string.at(0).length()) = split_string.at(2);
                 temp = "";
-                for (int i = 0; i < split_string.at(0).length(); i++)
+                for (size_t i = 0; i < split_string.at(0).length(); i++)
                 {
                     temp += current_namespace.at(i) + "!";
                 }
@@ -586,9 +595,9 @@ void MessageAnalyzer::clearArrays(const std::vector<std::string> &message_types)
     std::vector<std::string> output_lines;
     std::vector<std::string> split_string;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output = std::stringstream("");
         std::vector<std::string> split_string;
@@ -601,7 +610,7 @@ void MessageAnalyzer::clearArrays(const std::vector<std::string> &message_types)
             getline(file, buffer);
             has_array = false;
 
-            for (int i = 0; i < buffer.length(); i++)
+            for (size_t i = 0; i < buffer.length(); i++)
             {
                 if (buffer.at(i) == '[')
                 {
@@ -647,13 +656,13 @@ void MessageAnalyzer::applyArraysToSubFields(const std::vector<std::string> &mes
     int line;
     int array_level;
 
-    int lines;
+    //int lines;
     int max_level;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         max_level = 0;
 
         std::cout<<filename<<std::endl;
@@ -667,16 +676,16 @@ void MessageAnalyzer::applyArraysToSubFields(const std::vector<std::string> &mes
             //split_string = split(buffer, '#');
             boost::split(split_string, buffer, boost::is_any_of("#"));
             levels.push_back(split_string.at(0).length());
-            if (split_string.at(0).length() > max_level)
+            if ((int) split_string.at(0).length() > max_level)
             {
                 max_level = split_string.at(0).length();
             }
         }
         file.close();
-        lines = levels.size();
+        //lines = levels.size();
 
         // 2nd pass - get array layout data
-        int layout_data[lines][max_level + 1];
+        std::vector<std::vector<int>>layout_data;
         file.open(filename);
         levels.clear();
         line = 0;
@@ -791,10 +800,10 @@ void MessageAnalyzer::addArrayInfo(const std::vector<std::string> &message_types
     std::string temp;
     int level;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output_lines.clear();
         while (!file.eof())
@@ -815,7 +824,7 @@ void MessageAnalyzer::addArrayInfo(const std::vector<std::string> &message_types
                 else
                 {
                     temp = message_stucture.at(0);
-                    for (int j = 1; j < message_stucture.size(); j++)
+                    for (size_t j = 1; j < message_stucture.size(); j++)
                     {
                         temp += "!" + message_stucture.at(j);
                     }
@@ -845,10 +854,10 @@ void MessageAnalyzer::removeFieldNesting(const std::vector<std::string> &message
     std::vector<std::string> output_lines;
     std::vector<std::string> split_string;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output_lines.clear();
         while (!file.eof())
@@ -881,10 +890,10 @@ void MessageAnalyzer::removeExtraSpaces(const std::vector<std::string> &message_
     std::fstream file;
     std::string temp;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output = std::stringstream("");
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         output_lines.clear();
         while (!file.eof())
@@ -892,7 +901,7 @@ void MessageAnalyzer::removeExtraSpaces(const std::vector<std::string> &message_
             getline(file, buffer);
             //split_string = split(buffer, '#');
             boost::split(split_string, buffer, boost::is_any_of("#"));
-            for (int j = 0; j < split_string.at(1).length(); j++)
+            for (size_t j = 0; j < split_string.at(1).length(); j++)
             {
                 message_structure.clear();
                 space_delim.clear();
@@ -904,13 +913,13 @@ void MessageAnalyzer::removeExtraSpaces(const std::vector<std::string> &message_
                 if (space_delim.size() != 1)
                 {
                     temp = "";
-                    for (int k = 0; k < space_delim.size() - 1; k++)
+                    for (size_t k = 0; k < space_delim.size() - 1; k++)
                     {
                         temp += space_delim.at(k);
                     }
                     message_structure.at(message_structure.size()-1) = temp;
                     temp = "";
-                    for (int k = 0; k < message_structure.size(); k++)
+                    for (size_t k = 0; k < message_structure.size(); k++)
                     {
                         temp += message_structure.at(k) + "!";
                     }
@@ -926,7 +935,7 @@ void MessageAnalyzer::removeExtraSpaces(const std::vector<std::string> &message_
             }
             if (split_string.size() == 3)
             {
-                for (int j = 0; j < split_string.at(2).length(); j++)
+                for (size_t j = 0; j < split_string.at(2).length(); j++)
                 {
                     if (split_string.at(2).at(j) == ' ' || split_string.at(2).at(j) == '\t')
                     {
@@ -957,7 +966,7 @@ void MessageAnalyzer::removeExtraSpaces(const std::vector<std::string> &message_
 bool MessageAnalyzer::checkForFieldType(const std::string &key, const std::string &line)
 {
 bool beginning_blanks = true;
-    for (int i=0; i < line.length(); i++)
+    for (size_t i=0; i < line.length(); i++)
     {
         if ((line.at(i) == ' ' || line.at(i) == '\t') && beginning_blanks)
         {
@@ -987,11 +996,11 @@ void MessageAnalyzer::scanForUniqueFields(const std::vector<std::string> &messag
     std::string buffer;
     std::vector<std::string> output_line;
 
-    for (int i = 0; i < message_types.size(); i++)
+    for (size_t i = 0; i < message_types.size(); i++)
     {
         output_line.clear();
 
-        filename = "parser_files_path/msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
+        filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         file.open(filename);
         while (!file.eof())
         {
@@ -1000,7 +1009,7 @@ void MessageAnalyzer::scanForUniqueFields(const std::vector<std::string> &messag
             if (checkForFieldType("Quaternion", buffer))
             {
                 output_line.push_back(buffer);
-                for (int i = 0; i < 4; i++)
+                for (size_t i = 0; i < 4; i++)
                 {
                     getline(file, buffer);
                     buffer.erase(buffer.end()-1);

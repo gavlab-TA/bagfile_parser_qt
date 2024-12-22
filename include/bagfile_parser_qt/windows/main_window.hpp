@@ -18,6 +18,7 @@
 #include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
 
 #include "bagfile_parser_qt/parser_generator/bag_analyzer.hpp"
+#include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
 
 class MainWindow : public QWidget
 {

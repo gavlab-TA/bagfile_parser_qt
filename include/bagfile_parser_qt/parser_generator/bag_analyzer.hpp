@@ -25,8 +25,8 @@ class BagAnalyzer
     std::ofstream message_type_file;
     std::ofstream message_name_file;
 
-    void formatMessageTypes(const std::string &input, std::string &output);
-    void camelToSnake(const std::string &input, std::string &output);
+    std::string formatMessageTypes(std::string input);
+    std::string camelToSnake(std::string input);
     bool checkAllUpper(const std::string &input);
 };
 

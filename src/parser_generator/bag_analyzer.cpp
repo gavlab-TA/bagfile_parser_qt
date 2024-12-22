@@ -37,7 +37,7 @@ BagAnalyzer::~BagAnalyzer()
 
 }
 
-void BagAnalyzer::formatMessageTypes(const std::string &message_type, std::string &output)
+std::string BagAnalyzer::formatMessageTypes(std::string message_type)
 {
     std::vector<std::string> line_data; // = split(message_type, '/');
     boost::split(line_data, message_type, boost::is_any_of("/"));
@@ -59,8 +59,8 @@ void BagAnalyzer::formatMessageTypes(const std::string &message_type, std::strin
         }
     }
     message_name[0] = tolower(message_name[0]);
-    camelToSnake(message_name, message_name);
-    output = line_data.at(0) + "/" + line_data.at(1) + "/" + message_name;
+    message_name = camelToSnake(message_name);
+    return line_data.at(0) + "/" + line_data.at(1) + "/" + message_name;
 }
 
 bool BagAnalyzer::checkAllUpper(const std::string &input)
@@ -76,10 +76,10 @@ bool BagAnalyzer::checkAllUpper(const std::string &input)
     return true;
 }
 
-void BagAnalyzer::camelToSnake(const std::string &str, std::string &result)
+std::string BagAnalyzer::camelToSnake(std::string str)
 {
     // Empty String
-    result = "";
+    std::string result = "";
 
     // Append first character(in lower case)
     // to result string
@@ -109,6 +109,8 @@ void BagAnalyzer::camelToSnake(const std::string &str, std::string &result)
             result = result + ch;
         }
     }
+
+    return result;
 }
 
 void BagAnalyzer::generateParserData()
@@ -125,7 +127,7 @@ void BagAnalyzer::generateParserData()
 
         std::string topic_data_line;
         std::string message_type;
-        camelToSnake(item.second, message_type);
+        message_type = formatMessageTypes(item.second);
         topic_data_line = item.first + "#" + message_type + "#" + item.second + "\n";
         topic_data_file << topic_data_line;
 
@@ -138,5 +140,5 @@ void BagAnalyzer::generateParserData()
     topic_name_file.close();
     topic_data_file.clear();
     message_type_file.close();
-    message_type_file.close();
+    message_name_file.close();
 }

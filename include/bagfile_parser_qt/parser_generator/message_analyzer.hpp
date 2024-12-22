@@ -8,16 +8,18 @@
 #include <sstream>
 #include <stdio.h>
 #include <stdlib.h>
+#include <filesystem>
 #include <boost/algorithm/string.hpp>
 
 class MessageAnalyzer
 {
     public:
-    MessageAnalyzer(const std::string &parser_files_path);
+    MessageAnalyzer(const std::string &parser_files_path, const std::string &output_path);
     ~MessageAnalyzer();
 
     private:
     std::string parser_files_path;
+    std::string output_path;
 
     std::string messageTypesToSnake(std::string str);
     void makeLogs(const std::vector<std::string> &message_types);
