@@ -1,1 +1,0 @@
-/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt/ament_cmake_core/bagfile_parser_qtConfig-version.cmake
