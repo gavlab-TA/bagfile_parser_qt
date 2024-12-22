@@ -57,7 +57,7 @@ void SelectTopicsWindow::saveSelected()
     }
 
     std::ofstream file;
-    std::string topic_data_filename = output_path + "/files/selected_topic_data";
+    std::string topic_data_filename = output_path + "/files/selected_topic_data.txt";
     file.open(topic_data_filename, std::ios_base::trunc);
     size_t index = 0;
     for (size_t i = 0; i < save_indices.size(); ++i)

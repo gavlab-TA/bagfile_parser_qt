@@ -25,6 +25,9 @@ set(MOC_HEADERS
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/configure_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/remove_packages_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/select_topics_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/dependency_manager_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/recommended_depends_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/string_display_window.hpp
 )
 
 # List to store the generated moc files
@@ -55,6 +58,9 @@ set(MOC_SOURCES
   ${CMAKE_SOURCE_DIR}/src/moc/moc_configure_window.cpp
   ${CMAKE_SOURCE_DIR}/src/moc/moc_remove_packages_window.cpp
   ${CMAKE_SOURCE_DIR}/src/moc/moc_select_topics_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/moc/moc_dependency_manager_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/moc/moc_recommended_depends_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/moc/moc_string_display_window.cpp
 )
 
 set(WINDOW_SRCS 
@@ -62,6 +68,9 @@ set(WINDOW_SRCS
   src/configure_window.cpp
   src/remove_packages_window.cpp
   src/select_topics_window.cpp
+  src/dependency_manager_window.cpp
+  src/recommended_depends_window.cpp
+  src/string_display_window.cpp
 )
 
 add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES})

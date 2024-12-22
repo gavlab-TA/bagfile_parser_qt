@@ -14,6 +14,7 @@
 
 #include "bagfile_parser_qt/configure_window.hpp"
 #include "bagfile_parser_qt/select_topics_window.hpp"
+#include "bagfile_parser_qt/dependency_manager_window.hpp"
 
 class MainWindow : public QWidget
 {
@@ -34,6 +35,7 @@ class MainWindow : public QWidget
     
     QPushButton* configure_parser_button;
     QPushButton* select_topics_button;
+    QPushButton* configure_depends_button;
 
     std::string bagfile_path;
     std::string share_path;
@@ -47,6 +49,7 @@ class MainWindow : public QWidget
     void openBagSelectWindow();
     void openConfigureParserWindow();
     void openSelectTopicsWindow();
+    void openConfigureDependsWindow();
 };
 
 #endif

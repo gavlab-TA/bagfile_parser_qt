@@ -22,11 +22,15 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->select_topics_button = new QPushButton();
     this->select_topics_button->setText("Select Topics to Parse");
 
+    this->configure_depends_button = new QPushButton();
+    this->configure_depends_button->setText("Configure Dependencies");
+
     bag_selected = false;
 
 
     this->workflow_layout->addLayout(this->bag_select_layout);
     this->workflow_layout->addWidget(this->select_topics_button);
+    this->workflow_layout->addWidget(this->configure_depends_button);
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
@@ -35,6 +39,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->bag_select_button, &QPushButton::released, this, &MainWindow::openBagSelectWindow);
     QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
     QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
+    QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
 
     this->show();
 
@@ -104,4 +109,9 @@ void MainWindow::openSelectTopicsWindow()
 {
     SelectTopicsWindow topics_window(500, 500, data, output_path, this);
     topics_window.exec();
+}
+
+void MainWindow::openConfigureDependsWindow()
+{
+    DependencyManagerWindow dependency_window(500, 500, output_path, data); 
 }
