@@ -1,0 +1,4 @@
+source;share/bagfile_parser_qt/local_setup.bash
+source;share/bagfile_parser_qt/local_setup.dsv
+source;share/bagfile_parser_qt/local_setup.sh
+source;share/bagfile_parser_qt/local_setup.zsh

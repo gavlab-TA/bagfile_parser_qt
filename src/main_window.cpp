@@ -113,5 +113,6 @@ void MainWindow::openSelectTopicsWindow()
 
 void MainWindow::openConfigureDependsWindow()
 {
-    DependencyManagerWindow dependency_window(500, 500, output_path, data); 
+    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path, data); 
+    dependency_window->show();
 }

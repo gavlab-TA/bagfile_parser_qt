@@ -1,0 +1,199 @@
+[0.000000] (-) TimerEvent: {}
+[0.000210] (bagfile_parser_qt) JobQueued: {'identifier': 'bagfile_parser_qt', 'dependencies': OrderedDict()}
+[0.000368] (bagfile_parser_qt) JobStarted: {'identifier': 'bagfile_parser_qt'}
+[0.008850] (bagfile_parser_qt) JobProgress: {'identifier': 'bagfile_parser_qt', 'progress': 'cmake'}
+[0.009387] (bagfile_parser_qt) Command: {'cmd': ['/usr/bin/cmake', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt', '-DCMAKE_BUILD_TYPE=Release', '-DAMENT_CMAKE_SYMLINK_INSTALL=1', '-DCMAKE_INSTALL_PREFIX=/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt'], 'cwd': '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'kyle'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/kyle/snap/code/common/.cache/gio-modules'), ('SSH_AGENT_PID', '2357'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib'), ('HOME', '/home/kyle'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('OLDPWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include/bagfile_parser_qt'), ('TERM_PROGRAM_VERSION', '1.96.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/179/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/kyle/snap/code/common/.cache/immodules/immodules.cache'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/179/usr/share/code/code'), ('MANAGERPID', '2246'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'kyle'), ('JOURNAL_STREAM', '8:66452'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'kyle'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/home/kyle/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/kyle-HP-ENVY-Laptop-15-ep1xxx:@/tmp/.ICE-unix/2395,unix/kyle-HP-ENVY-Laptop-15-ep1xxx:/tmp/.ICE-unix/2395'), ('GTK_EXE_PREFIX', '/snap/code/179/usr'), ('INVOCATION_ID', 'addfb340117a4d5abe1a15a40c5f75d7'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/15da471e_83bf_4df5_9873_995fae1a696e'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/179/usr/lib/locale'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/kyle/snap/code/179/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-a6901085a1.sock'), ('GNOME_TERMINAL_SERVICE', ':1.82'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/kyle/snap/code/179/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/kyle/snap/code/179/.local/share:/home/kyle/snap/code/179:/snap/code/179/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('GENICAM_GENTL64_PATH', ':/home/kyle/devel/atr/aubie/src/drivers/avt_vimba_camera/Vimba_6_0/VimbaGigETL/CTI/x86_64bit'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic')]), 'shell': False}
+[0.071869] (bagfile_parser_qt) StdoutLine: {'line': b'-- The CXX compiler identification is GNU 9.4.0\n'}
+[0.076070] (bagfile_parser_qt) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++\n'}
+[0.099874] (-) TimerEvent: {}
+[0.128827] (bagfile_parser_qt) StdoutLine: {'line': b'-- Check for working CXX compiler: /usr/bin/c++ -- works\n'}
+[0.129656] (bagfile_parser_qt) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info\n'}
+[0.183992] (bagfile_parser_qt) StdoutLine: {'line': b'-- Detecting CXX compiler ABI info - done\n'}
+[0.191000] (bagfile_parser_qt) StdoutLine: {'line': b'-- Detecting CXX compile features\n'}
+[0.191690] (bagfile_parser_qt) StdoutLine: {'line': b'-- Detecting CXX compile features - done\n'}
+[0.192941] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found ament_cmake: 1.1.6 (/opt/ros/galactic/share/ament_cmake/cmake)\n'}
+[0.200014] (-) TimerEvent: {}
+[0.209107] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found PythonInterp: /usr/bin/python3 (found suitable version "3.8.10", minimum required is "3") \n'}
+[0.209264] (bagfile_parser_qt) StdoutLine: {'line': b'-- Using PYTHON_EXECUTABLE: /usr/bin/python3\n'}
+[0.247853] (bagfile_parser_qt) StdoutLine: {'line': b'-- Override CMake install command with custom implementation using symlinks instead of copying resources\n'}
+[0.262311] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found rosbag2_cpp: 0.9.2 (/opt/ros/galactic/share/rosbag2_cpp/cmake)\n'}
+[0.300176] (-) TimerEvent: {}
+[0.316270] (bagfile_parser_qt) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c\n'}
+[0.320062] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found rosidl_adapter: 2.2.3 (/opt/ros/galactic/share/rosidl_adapter/cmake)\n'}
+[0.384958] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found OpenSSL: /usr/lib/x86_64-linux-gnu/libcrypto.so (found version "1.1.1f")  \n'}
+[0.400285] (-) TimerEvent: {}
+[0.416241] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found FastRTPS: /opt/ros/galactic/include  \n'}
+[0.468232] (bagfile_parser_qt) StdoutLine: {'line': b'-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp\n'}
+[0.500441] (-) TimerEvent: {}
+[0.504880] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found rmw_implementation_cmake: 3.3.1 (/opt/ros/galactic/share/rmw_implementation_cmake/cmake)\n'}
+[0.506403] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found rmw_cyclonedds_cpp: 0.22.6 (/opt/ros/galactic/share/rmw_cyclonedds_cpp/cmake)\n'}
+[0.518663] (bagfile_parser_qt) StdoutLine: {'line': b"-- Using RMW implementation 'rmw_cyclonedds_cpp' as default\n"}
+[0.528655] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for C++ include pthread.h\n'}
+[0.595473] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for C++ include pthread.h - found\n'}
+[0.595700] (bagfile_parser_qt) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n'}
+[0.600506] (-) TimerEvent: {}
+[0.660663] (bagfile_parser_qt) StdoutLine: {'line': b'-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Failed\n'}
+[0.660843] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads\n'}
+[0.700631] (-) TimerEvent: {}
+[0.714240] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for pthread_create in pthreads - not found\n'}
+[0.714394] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for pthread_create in pthread\n'}
+[0.769961] (bagfile_parser_qt) StdoutLine: {'line': b'-- Looking for pthread_create in pthread - found\n'}
+[0.770677] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found Threads: TRUE  \n'}
+[0.800783] (-) TimerEvent: {}
+[0.896855] (bagfile_parser_qt) StdoutLine: {'line': b'-- Found ament_lint_auto: 0.10.7 (/opt/ros/galactic/share/ament_lint_auto/cmake)\n'}
+[0.900860] (-) TimerEvent: {}
+[0.960130] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'copyright' to check source files copyright and LICENSE\n"}
+[1.001013] (-) TimerEvent: {}
+[1.101311] (-) TimerEvent: {}
+[1.157289] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'cppcheck' to perform static code analysis on C / C++ code\n"}
+[1.157590] (bagfile_parser_qt) StdoutLine: {'line': b'-- Configured cppcheck include dirs: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include\n'}
+[1.157633] (bagfile_parser_qt) StdoutLine: {'line': b'-- Configured cppcheck exclude dirs and/or files: \n'}
+[1.201469] (-) TimerEvent: {}
+[1.301732] (-) TimerEvent: {}
+[1.357943] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'cpplint' to check C / C++ code against the Google style\n"}
+[1.358092] (bagfile_parser_qt) StdoutLine: {'line': b'-- Configured cpplint exclude dirs and/or files: \n'}
+[1.382492] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'flake8' to check Python code syntax and style conventions\n"}
+[1.401821] (-) TimerEvent: {}
+[1.431476] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'lint_cmake' to check CMake code style\n"}
+[1.458603] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'pep257' to check Python code against some of the style conventions in PEP 257\n"}
+[1.501948] (-) TimerEvent: {}
+[1.602267] (-) TimerEvent: {}
+[1.682183] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'uncrustify' to check C / C++ code style\n"}
+[1.682337] (bagfile_parser_qt) StdoutLine: {'line': b'-- Configured uncrustify additional arguments: \n'}
+[1.702367] (-) TimerEvent: {}
+[1.717701] (bagfile_parser_qt) StdoutLine: {'line': b"-- Added test 'xmllint' to check XML markup files\n"}
+[1.720138] (bagfile_parser_qt) StdoutLine: {'line': b'-- Configuring done\n'}
+[1.761315] (bagfile_parser_qt) StdoutLine: {'line': b'-- Generating done\n'}
+[1.764694] (bagfile_parser_qt) StdoutLine: {'line': b'-- Build files have been written to: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt\n'}
+[1.771400] (bagfile_parser_qt) CommandEnded: {'returncode': 0}
+[1.771961] (bagfile_parser_qt) JobProgress: {'identifier': 'bagfile_parser_qt', 'progress': 'build'}
+[1.772553] (bagfile_parser_qt) Command: {'cmd': ['/usr/bin/cmake', '--build', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt', '--', '-j16', '-l16'], 'cwd': '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'kyle'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/kyle/snap/code/common/.cache/gio-modules'), ('SSH_AGENT_PID', '2357'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib'), ('HOME', '/home/kyle'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('OLDPWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include/bagfile_parser_qt'), ('TERM_PROGRAM_VERSION', '1.96.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/179/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/kyle/snap/code/common/.cache/immodules/immodules.cache'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/179/usr/share/code/code'), ('MANAGERPID', '2246'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'kyle'), ('JOURNAL_STREAM', '8:66452'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'kyle'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/home/kyle/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/kyle-HP-ENVY-Laptop-15-ep1xxx:@/tmp/.ICE-unix/2395,unix/kyle-HP-ENVY-Laptop-15-ep1xxx:/tmp/.ICE-unix/2395'), ('GTK_EXE_PREFIX', '/snap/code/179/usr'), ('INVOCATION_ID', 'addfb340117a4d5abe1a15a40c5f75d7'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/15da471e_83bf_4df5_9873_995fae1a696e'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/179/usr/lib/locale'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/kyle/snap/code/179/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-a6901085a1.sock'), ('GNOME_TERMINAL_SERVICE', ':1.82'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/kyle/snap/code/179/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/kyle/snap/code/179/.local/share:/home/kyle/snap/code/179:/snap/code/179/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('GENICAM_GENTL64_PATH', ':/home/kyle/devel/atr/aubie/src/drivers/avt_vimba_camera/Vimba_6_0/VimbaGigETL/CTI/x86_64bit'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic')]), 'shell': False}
+[1.802594] (-) TimerEvent: {}
+[1.811378] (bagfile_parser_qt) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target bagfile_parser_qt_autogen\x1b[0m\n'}
+[1.820523] (bagfile_parser_qt) StdoutLine: {'line': b'[  5%] \x1b[34m\x1b[1mGenerating MOC file for /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include/bagfile_parser_qt/remove_depends_window.hpp\x1b[0m\n'}
+[1.820775] (bagfile_parser_qt) StdoutLine: {'line': b'[  5%] \x1b[34m\x1b[1mGenerating MOC file for /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include/bagfile_parser_qt/dependency_manager_window.hpp\x1b[0m\n'}
+[1.832515] (bagfile_parser_qt) StdoutLine: {'line': b'[  8%] \x1b[34m\x1b[1mAutomatic MOC and UIC for target bagfile_parser_qt\x1b[0m\n'}
+[1.851844] (bagfile_parser_qt) StdoutLine: {'line': b'[ 25%] Built target bagfile_parser_qt_autogen\n'}
+[1.861964] (bagfile_parser_qt) StdoutLine: {'line': b'\x1b[35m\x1b[1mScanning dependencies of target bagfile_parser_qt\x1b[0m\n'}
+[1.902693] (-) TimerEvent: {}
+[1.964545] (bagfile_parser_qt) StdoutLine: {'line': b'[ 27%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/bagfile_parser_qt_autogen/mocs_compilation.cpp.o\x1b[0m\n'}
+[1.971596] (bagfile_parser_qt) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/main.cpp.o\x1b[0m\n'}
+[1.971834] (bagfile_parser_qt) StdoutLine: {'line': b'[ 33%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/configure_window.cpp.o\x1b[0m\n'}
+[1.972026] (bagfile_parser_qt) StdoutLine: {'line': b'[ 36%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/select_topics_window.cpp.o\x1b[0m\n'}
+[1.972174] (bagfile_parser_qt) StdoutLine: {'line': b'[ 38%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/main_window.cpp.o\x1b[0m\n'}
+[1.972432] (bagfile_parser_qt) StdoutLine: {'line': b'[ 41%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/recommended_depends_window.cpp.o\x1b[0m\n'}
+[1.972534] (bagfile_parser_qt) StdoutLine: {'line': b'[ 44%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/remove_packages_window.cpp.o\x1b[0m\n'}
+[1.972754] (bagfile_parser_qt) StdoutLine: {'line': b'[ 47%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/dependency_manager_window.cpp.o\x1b[0m\n'}
+[1.972879] (bagfile_parser_qt) StdoutLine: {'line': b'[ 50%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_main_window.cpp.o\x1b[0m\n'}
+[1.973095] (bagfile_parser_qt) StdoutLine: {'line': b'[ 52%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/string_display_window.cpp.o\x1b[0m\n'}
+[1.973526] (bagfile_parser_qt) StdoutLine: {'line': b'[ 55%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/remove_depends_window.cpp.o\x1b[0m\n'}
+[1.974154] (bagfile_parser_qt) StdoutLine: {'line': b'[ 61%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_configure_window.cpp.o\x1b[0m\n'}
+[1.974260] (bagfile_parser_qt) StdoutLine: {'line': b'[ 61%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_remove_packages_window.cpp.o\x1b[0m\n'}
+[1.975081] (bagfile_parser_qt) StdoutLine: {'line': b'[ 63%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_dependency_manager_window.cpp.o\x1b[0m\n'}
+[1.980579] (bagfile_parser_qt) StdoutLine: {'line': b'[ 69%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_select_topics_window.cpp.o\x1b[0m\n'}
+[1.980805] (bagfile_parser_qt) StdoutLine: {'line': b'[ 69%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_recommended_depends_window.cpp.o\x1b[0m\n'}
+[1.989624] (bagfile_parser_qt) StdoutLine: {'line': b'[ 72%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_string_display_window.cpp.o\x1b[0m\n'}
+[2.002795] (-) TimerEvent: {}
+[2.103141] (-) TimerEvent: {}
+[2.203488] (-) TimerEvent: {}
+[2.303886] (-) TimerEvent: {}
+[2.404516] (-) TimerEvent: {}
+[2.505171] (-) TimerEvent: {}
+[2.605813] (-) TimerEvent: {}
+[2.706480] (-) TimerEvent: {}
+[2.807343] (-) TimerEvent: {}
+[2.908053] (-) TimerEvent: {}
+[3.008756] (-) TimerEvent: {}
+[3.109447] (-) TimerEvent: {}
+[3.209877] (-) TimerEvent: {}
+[3.310301] (-) TimerEvent: {}
+[3.410658] (-) TimerEvent: {}
+[3.511100] (-) TimerEvent: {}
+[3.611468] (-) TimerEvent: {}
+[3.711856] (-) TimerEvent: {}
+[3.743849] (bagfile_parser_qt) StdoutLine: {'line': b'[ 75%] \x1b[32mBuilding CXX object CMakeFiles/bagfile_parser_qt.dir/src/moc/moc_remove_depends_window.cpp.o\x1b[0m\n'}
+[3.811974] (-) TimerEvent: {}
+[3.912678] (-) TimerEvent: {}
+[4.013458] (-) TimerEvent: {}
+[4.113849] (-) TimerEvent: {}
+[4.214271] (-) TimerEvent: {}
+[4.314670] (-) TimerEvent: {}
+[4.415059] (-) TimerEvent: {}
+[4.515852] (-) TimerEvent: {}
+[4.616240] (-) TimerEvent: {}
+[4.716623] (-) TimerEvent: {}
+[4.817027] (-) TimerEvent: {}
+[4.917426] (-) TimerEvent: {}
+[5.017910] (-) TimerEvent: {}
+[5.118772] (-) TimerEvent: {}
+[5.219222] (-) TimerEvent: {}
+[5.319636] (-) TimerEvent: {}
+[5.420063] (-) TimerEvent: {}
+[5.520502] (-) TimerEvent: {}
+[5.620867] (-) TimerEvent: {}
+[5.721271] (-) TimerEvent: {}
+[5.821826] (-) TimerEvent: {}
+[5.922269] (-) TimerEvent: {}
+[6.022718] (-) TimerEvent: {}
+[6.123125] (-) TimerEvent: {}
+[6.223454] (-) TimerEvent: {}
+[6.323823] (-) TimerEvent: {}
+[6.424257] (-) TimerEvent: {}
+[6.524619] (-) TimerEvent: {}
+[6.624987] (-) TimerEvent: {}
+[6.725388] (-) TimerEvent: {}
+[6.825723] (-) TimerEvent: {}
+[6.926135] (-) TimerEvent: {}
+[7.026578] (-) TimerEvent: {}
+[7.126964] (-) TimerEvent: {}
+[7.227346] (-) TimerEvent: {}
+[7.327733] (-) TimerEvent: {}
+[7.428264] (-) TimerEvent: {}
+[7.528832] (-) TimerEvent: {}
+[7.629326] (-) TimerEvent: {}
+[7.729678] (-) TimerEvent: {}
+[7.830070] (-) TimerEvent: {}
+[7.930416] (-) TimerEvent: {}
+[8.030722] (-) TimerEvent: {}
+[8.131069] (-) TimerEvent: {}
+[8.231391] (-) TimerEvent: {}
+[8.331765] (-) TimerEvent: {}
+[8.432074] (-) TimerEvent: {}
+[8.532334] (-) TimerEvent: {}
+[8.632585] (-) TimerEvent: {}
+[8.732817] (-) TimerEvent: {}
+[8.833122] (-) TimerEvent: {}
+[8.933353] (-) TimerEvent: {}
+[8.978397] (bagfile_parser_qt) StdoutLine: {'line': b'[ 77%] \x1b[32m\x1b[1mLinking CXX executable bagfile_parser_qt\x1b[0m\n'}
+[9.033477] (-) TimerEvent: {}
+[9.133790] (-) TimerEvent: {}
+[9.234142] (-) TimerEvent: {}
+[9.334428] (-) TimerEvent: {}
+[9.434759] (-) TimerEvent: {}
+[9.535078] (-) TimerEvent: {}
+[9.558728] (bagfile_parser_qt) StdoutLine: {'line': b'[100%] Built target bagfile_parser_qt\n'}
+[9.571124] (bagfile_parser_qt) CommandEnded: {'returncode': 0}
+[9.571633] (bagfile_parser_qt) JobProgress: {'identifier': 'bagfile_parser_qt', 'progress': 'install'}
+[9.579214] (bagfile_parser_qt) Command: {'cmd': ['/usr/bin/cmake', '--install', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt'], 'cwd': '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt', 'env': OrderedDict([('LESSOPEN', '| /usr/bin/lesspipe %s'), ('USER', 'kyle'), ('FONTCONFIG_PATH', '/etc/fonts'), ('GIO_MODULE_DIR', '/home/kyle/snap/code/common/.cache/gio-modules'), ('SSH_AGENT_PID', '2357'), ('XDG_SESSION_TYPE', 'x11'), ('GIT_ASKPASS', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass.sh'), ('GTK_EXE_PREFIX_VSCODE_SNAP_ORIG', ''), ('GDK_BACKEND_VSCODE_SNAP_ORIG', ''), ('SHLVL', '2'), ('LD_LIBRARY_PATH', '/opt/ros/galactic/opt/yaml_cpp_vendor/lib:/opt/ros/galactic/opt/rviz_ogre_vendor/lib:/opt/ros/galactic/lib/x86_64-linux-gnu:/opt/ros/galactic/lib'), ('HOME', '/home/kyle'), ('CHROME_DESKTOP', 'code.desktop'), ('LOCPATH_VSCODE_SNAP_ORIG', ''), ('OLDPWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/include/bagfile_parser_qt'), ('TERM_PROGRAM_VERSION', '1.96.2'), ('DESKTOP_SESSION', 'ubuntu'), ('GTK_PATH', '/snap/code/179/usr/lib/x86_64-linux-gnu/gtk-3.0'), ('XDG_DATA_HOME_VSCODE_SNAP_ORIG', ''), ('GTK_IM_MODULE_FILE', '/home/kyle/snap/code/common/.cache/immodules/immodules.cache'), ('ROS_PYTHON_VERSION', '3'), ('GNOME_SHELL_SESSION_MODE', 'ubuntu'), ('GTK_MODULES', 'gail:atk-bridge'), ('GSETTINGS_SCHEMA_DIR_VSCODE_SNAP_ORIG', ''), ('VSCODE_GIT_ASKPASS_MAIN', '/snap/code/179/usr/share/code/resources/app/extensions/git/dist/askpass-main.js'), ('VSCODE_GIT_ASKPASS_NODE', '/snap/code/179/usr/share/code/code'), ('MANAGERPID', '2246'), ('DBUS_SESSION_BUS_ADDRESS', 'unix:path=/run/user/1000/bus'), ('COLORTERM', 'truecolor'), ('IM_CONFIG_PHASE', '1'), ('COLCON_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install'), ('ROS_DISTRO', 'galactic'), ('LOGNAME', 'kyle'), ('JOURNAL_STREAM', '8:66452'), ('_', '/usr/bin/colcon'), ('ROS_VERSION', '2'), ('XDG_CONFIG_DIRS_VSCODE_SNAP_ORIG', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_SESSION_CLASS', 'user'), ('XDG_DATA_DIRS_VSCODE_SNAP_ORIG', '/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('USERNAME', 'kyle'), ('TERM', 'xterm-256color'), ('GNOME_DESKTOP_SESSION_ID', 'this-is-deprecated'), ('ROS_LOCALHOST_ONLY', '0'), ('WINDOWPATH', '2'), ('PATH', '/opt/ros/galactic/bin:/home/kyle/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin'), ('SESSION_MANAGER', 'local/kyle-HP-ENVY-Laptop-15-ep1xxx:@/tmp/.ICE-unix/2395,unix/kyle-HP-ENVY-Laptop-15-ep1xxx:/tmp/.ICE-unix/2395'), ('GTK_EXE_PREFIX', '/snap/code/179/usr'), ('INVOCATION_ID', 'addfb340117a4d5abe1a15a40c5f75d7'), ('XDG_MENU_PREFIX', 'gnome-'), ('GNOME_TERMINAL_SCREEN', '/org/gnome/Terminal/screen/15da471e_83bf_4df5_9873_995fae1a696e'), ('XDG_RUNTIME_DIR', '/run/user/1000'), ('GDK_BACKEND', 'x11'), ('DISPLAY', ':0'), ('LOCPATH', '/snap/code/179/usr/lib/locale'), ('LANG', 'en_US.UTF-8'), ('XDG_CURRENT_DESKTOP', 'Unity'), ('GIO_MODULE_DIR_VSCODE_SNAP_ORIG', ''), ('XDG_DATA_HOME', '/home/kyle/snap/code/179/.local/share'), ('XMODIFIERS', '@im=ibus'), ('XDG_SESSION_DESKTOP', 'ubuntu'), ('XAUTHORITY', '/run/user/1000/gdm/Xauthority'), ('LS_COLORS', 'rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:'), ('VSCODE_GIT_IPC_HANDLE', '/run/user/1000/vscode-git-a6901085a1.sock'), ('GNOME_TERMINAL_SERVICE', ':1.82'), ('TERM_PROGRAM', 'vscode'), ('SSH_AUTH_SOCK', '/run/user/1000/keyring/ssh'), ('GSETTINGS_SCHEMA_DIR', '/home/kyle/snap/code/179/.local/share/glib-2.0/schemas'), ('AMENT_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic'), ('ORIGINAL_XDG_CURRENT_DESKTOP', 'ubuntu:GNOME'), ('SHELL', '/bin/bash'), ('QT_ACCESSIBILITY', '1'), ('GDMSESSION', 'ubuntu'), ('LESSCLOSE', '/usr/bin/lesspipe %s %s'), ('GTK_PATH_VSCODE_SNAP_ORIG', ''), ('FONTCONFIG_FILE', '/etc/fonts/fonts.conf'), ('GTK_IM_MODULE_FILE_VSCODE_SNAP_ORIG', ''), ('GPG_AGENT_INFO', '/run/user/1000/gnupg/S.gpg-agent:0:1'), ('VSCODE_GIT_ASKPASS_EXTRA_ARGS', ''), ('QT_IM_MODULE', 'ibus'), ('PWD', '/home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/build/bagfile_parser_qt'), ('LC_ALL', 'en_US.UTF-8'), ('XDG_CONFIG_DIRS', '/etc/xdg/xdg-ubuntu:/etc/xdg'), ('XDG_DATA_DIRS', '/home/kyle/snap/code/179/.local/share:/home/kyle/snap/code/179:/snap/code/179/usr/share:/usr/share/ubuntu:/usr/local/share/:/usr/share/:/var/lib/snapd/desktop'), ('PYTHONPATH', '/opt/ros/galactic/lib/python3.8/site-packages'), ('COLCON', '1'), ('GENICAM_GENTL64_PATH', ':/home/kyle/devel/atr/aubie/src/drivers/avt_vimba_camera/Vimba_6_0/VimbaGigETL/CTI/x86_64bit'), ('VTE_VERSION', '6003'), ('CMAKE_PREFIX_PATH', '/home/kyle/devel/atr/local_devel/parser_ws/install/bagfile_parser_qt:/opt/ros/galactic')]), 'shell': False}
+[9.585559] (bagfile_parser_qt) StdoutLine: {'line': b'-- Install configuration: "Release"\n'}
+[9.585732] (bagfile_parser_qt) StdoutLine: {'line': b'-- Execute custom install script\n'}
+[9.586593] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/lib/bagfile_parser_qt/bagfile_parser_qt\n'}
+[9.592889] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/ament_index/resource_index/package_run_dependencies/bagfile_parser_qt\n'}
+[9.599034] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/ament_index/resource_index/parent_prefix_path/bagfile_parser_qt\n'}
+[9.604615] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/environment/ament_prefix_path.sh\n'}
+[9.610213] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/environment/ament_prefix_path.dsv\n'}
+[9.615975] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/environment/path.sh\n'}
+[9.622364] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/environment/path.dsv\n'}
+[9.627869] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/local_setup.bash\n'}
+[9.633489] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/local_setup.sh\n'}
+[9.635151] (-) TimerEvent: {}
+[9.639070] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/local_setup.zsh\n'}
+[9.644493] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/local_setup.dsv\n'}
+[9.650483] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/package.dsv\n'}
+[9.656788] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/ament_index/resource_index/packages/bagfile_parser_qt\n'}
+[9.662154] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/cmake/bagfile_parser_qtConfig.cmake\n'}
+[9.668498] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/cmake/bagfile_parser_qtConfig-version.cmake\n'}
+[9.675003] (bagfile_parser_qt) StdoutLine: {'line': b'-- Symlinking: /home/kyle/devel/atr/local_devel/parser_ws/src/bagfile_parser_qt/install/bagfile_parser_qt/share/bagfile_parser_qt/package.xml\n'}
+[9.683112] (bagfile_parser_qt) CommandEnded: {'returncode': 0}
+[9.695192] (bagfile_parser_qt) JobEnded: {'identifier': 'bagfile_parser_qt', 'rc': 0}
+[9.695701] (-) EventReactorShutdown: {}

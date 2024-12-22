@@ -22,6 +22,7 @@ void StringDisplayWindow::initialize(const std::vector<std::string> &strings, co
     
     QVBoxLayout *layout = new QVBoxLayout();
     done_button = new QPushButton();
+    done_button->setText("Done");
 
     QListWidget *list_widget = new QListWidget();
 

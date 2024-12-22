@@ -1,6 +1,6 @@
 #include "bagfile_parser_qt/dependency_manager_window.hpp"
 
-DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, const rosbag2_storage::BagMetadata &data)
+DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, const rosbag2_storage::BagMetadata &data, QWidget *parent) : QWidget(parent)
 {
     this->main_layout = new QVBoxLayout();
     this->resize(width, height);
@@ -14,11 +14,35 @@ DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &he
 
     cleanupDependsFile();
 
-    this->setLayout(main_layout);
-    this->show();
+    this->show_depends_button = new QPushButton();
+    this->show_depends_button->setText("Show Tracked Dependencies");
+    this->reset_depends_button = new QPushButton();
+    this->reset_depends_button->setText("Reset Tracked Dependencies");
+    this->add_depends_button = new QPushButton();
+    this->add_depends_button->setText("Add Dependency");
+    this->remove_depends_button = new QPushButton();
+    this->remove_depends_button->setText("Remove Depends");
 
-    RecommendedDependsWindow recommended_depends_window(bag_packages, output_path, this);
+    this->depends_edit = new QLineEdit();
+    this->add_depends_layout = new QHBoxLayout();
+    this->add_depends_layout->addWidget(this->depends_edit);
+    this->add_depends_layout->addWidget(this->add_depends_button);
+    this->add_depends_layout->addWidget(this->remove_depends_button);
+
+    this->main_layout->addWidget(this->show_depends_button);
+    this->main_layout->addLayout(this->add_depends_layout);
+    this->main_layout->addWidget(this->reset_depends_button);
+    //this->main_layout->addWidget(this->remove_depends_button);
+
+    QObject::connect(this->show_depends_button, &QPushButton::released, this, &DependencyManagerWindow::openShowDependsWindow);
+    QObject::connect(this->add_depends_button, &QPushButton::released, this, &DependencyManagerWindow::addDependency);
+    QObject::connect(this->reset_depends_button, &QPushButton::released, this, &DependencyManagerWindow::resetDependencies);
+    QObject::connect(this->remove_depends_button, &QPushButton::released, this, &DependencyManagerWindow::openRemoveDependsWindow);
+
+    RecommendedDependsWindow recommended_depends_window(bag_packages, output_path);
     recommended_depends_window.exec();
+
+    this->setLayout(main_layout);
 }
 
 DependencyManagerWindow::~DependencyManagerWindow()
@@ -92,4 +116,81 @@ void DependencyManagerWindow::cleanupDependsFile()
         out_file << "\n";
     }
     out_file.close();
+}
+
+void DependencyManagerWindow::openShowDependsWindow()
+{
+    packages.clear();
+
+    std::ifstream file;
+    std::string filename = output_path + "/files/depends.txt";
+    file.open(filename);
+
+    while (!file.eof())
+    {
+        std::string line;
+        getline(file, line);
+        if (line.length() > 1)
+        {
+            packages.push_back(line);
+        }
+    }
+
+    StringDisplayWindow string_display_window(packages, "Tracked Depends", this);
+    string_display_window.exec();
+}
+
+void DependencyManagerWindow::addDependency()
+{
+    std::ofstream file;
+    std::string filename = output_path + "/files/depends.txt";
+
+    std::string depend = depends_edit->text().toStdString();
+    depend += "\n";
+
+    depends_edit->clear();
+
+    file.open(filename, std::ios_base::app);
+    file << depend;
+    file.close();
+}
+
+void DependencyManagerWindow::resetDependencies()
+{
+    if (confirmDialog())
+    {
+        std::ofstream file;
+        std::string filename = output_path + "/files/depends.txt";
+        file.open(filename, std::ios_base::trunc);
+        file.close();
+
+        RecommendedDependsWindow recommended_depends_window(bag_packages, output_path);
+        recommended_depends_window.exec();
+    }
+}
+
+bool DependencyManagerWindow::confirmDialog()
+{
+    QMessageBox msg_box;
+    msg_box.setIcon(QMessageBox::Question);
+    msg_box.setWindowTitle("Warning");
+    msg_box.setText("This will remove all tracked dependencies. Are you sure?");
+    msg_box.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msg_box.setDefaultButton(QMessageBox::Cancel);
+
+    int result = msg_box.exec();
+    if (result == QMessageBox::Yes)
+    {
+        return true;
+    }
+    else 
+    {
+        return false;
+    }
+}
+
+void DependencyManagerWindow::openRemoveDependsWindow()
+{
+    RemoveDependsWindow remove_depends_window(output_path+"/files/depends.txt", this);
+    remove_depends_window.exec();
 }

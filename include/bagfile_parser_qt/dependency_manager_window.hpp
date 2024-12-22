@@ -5,32 +5,50 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QLayout>
+#include <QtWidgets>
 
 #include "rclcpp/rclcpp.hpp"
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
 #include <boost/algorithm/string.hpp>
 
 #include "bagfile_parser_qt/recommended_depends_window.hpp"
+#include "bagfile_parser_qt/string_display_window.hpp"
+#include "bagfile_parser_qt/remove_depends_window.hpp"
 
-class DependencyManagerWindow : QWidget
+class DependencyManagerWindow : public QWidget
 {
     Q_OBJECT
 
     public:
-    DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, const rosbag2_storage::BagMetadata &data);
+    DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, const rosbag2_storage::BagMetadata &data, QWidget *parent = nullptr);
     ~DependencyManagerWindow();
 
     private:
     QVBoxLayout* main_layout;
+    QPushButton* show_depends_button;
+    QPushButton* add_depends_button;
+    QPushButton* remove_depends_button;
+    QPushButton* reset_depends_button;
+    QHBoxLayout* add_depends_layout;
+    QLineEdit* depends_edit;
 
     std::vector<std::string> packages;
     std::vector<std::string> bag_packages;
     std::string output_path;
     rosbag2_storage::BagMetadata data;
 
-    void getBagPackages();
-    bool vectorContains(const std::vector<std::string> &vec, const std::string &val);
+
     void cleanupDependsFile();
+    void getBagPackages();
+
+    bool vectorContains(const std::vector<std::string> &vec, const std::string &val);
+    bool confirmDialog();
+
+    private slots:
+    void openShowDependsWindow();
+    void addDependency();
+    void openRemoveDependsWindow();
+    void resetDependencies();
 };
 
 #endif
