@@ -25,13 +25,16 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->configure_depends_button = new QPushButton();
     this->configure_depends_button->setText("Configure Dependencies");
 
-    bag_selected = false;
+    this->autoconfigure_generator_button = new QPushButton();
+    this->autoconfigure_generator_button->setText("Autoconfigure Generator");
 
+    bag_selected = false;
 
     this->workflow_layout->addLayout(this->bag_select_layout);
     this->workflow_layout->addWidget(this->select_topics_button);
     this->workflow_layout->addWidget(this->configure_depends_button);
     this->workflow_layout->addWidget(this->configure_parser_button);
+    this->workflow_layout->addWidget(this->autoconfigure_generator_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
     this->setLayout(this->main_layout);
@@ -40,6 +43,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
     QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
+    QObject::connect(this->autoconfigure_generator_button, &QPushButton::released, this, &MainWindow::autoconfigureGenerator);
 
     this->show();
 
@@ -50,16 +54,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     file.close();
     this->output_path += "/generated";
 
-    std::string files_dir = output_path + "/files/";
-    if (!boost::filesystem::exists(files_dir.c_str()))
-    {
-        std::string command = "mkdir -p " + files_dir;
-        int res = system(command.c_str());
-        if (res)
-        {
-            std::cout<<"Issue creating logfile space"<<std::endl;
-        }
-    }
+    this->setupFileLocations();    
 }
 
 MainWindow::~MainWindow()
@@ -71,6 +66,42 @@ MainWindow::~MainWindow()
     delete bag_path_label;
     delete status_label;
     delete configure_parser_button;
+}
+
+void MainWindow::setupFileLocations()
+{
+    std::string files_dir = output_path + "/files/";
+    if (!boost::filesystem::exists(files_dir.c_str()))
+    {
+        std::string command = "mkdir -p " + files_dir;
+        int res = system(command.c_str());
+        if (res)
+        {
+            std::cout<<"Issue creating logfile space"<<std::endl;
+        }
+    }
+
+    std::string parser_resource_dir = output_path + "/files/parser_files/";
+    if (!boost::filesystem::exists(parser_resource_dir.c_str()))
+    {
+        std::string command = "mkdir -p " + parser_resource_dir;
+        int res = system(command.c_str());
+        if (res)
+        {
+            std::cout<<"Issue creating parser resource space"<<std::endl;
+        }
+    }
+
+    std::string message_data_dir = output_path + "/files/parser_files/msg_data/";
+    if (!boost::filesystem::exists(message_data_dir.c_str()))
+    {
+        std::string command = "mkdir -p " + message_data_dir;
+        int res = system(command.c_str());
+        if (res)
+        {
+            std::cout<<"Issue creating message data space"<<std::endl;
+        }
+    }
 }
 
 void MainWindow::openBagSelectWindow()
@@ -126,4 +157,10 @@ void MainWindow::openConfigureDependsWindow()
 {
     DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path); 
     dependency_window->show();
+}
+
+void MainWindow::autoconfigureGenerator()
+{
+    BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
+    std::cout<<"done"<<std::endl;
 }
