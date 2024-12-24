@@ -19,6 +19,9 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->configure_parser_button = new QPushButton();
     this->configure_parser_button->setText("Configure Message Dependencies");
 
+    this->generate_parser_button = new QPushButton();
+    this->generate_parser_button->setText("Generate Parser");
+
     this->select_topics_button = new QPushButton();
     this->select_topics_button->setText("Select Topics to Parse");
 
@@ -35,6 +38,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->workflow_layout->addWidget(this->configure_depends_button);
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->workflow_layout->addWidget(this->autoconfigure_generator_button);
+    this->workflow_layout->addWidget(this->generate_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
     this->setLayout(this->main_layout);
@@ -44,6 +48,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
     QObject::connect(this->autoconfigure_generator_button, &QPushButton::released, this, &MainWindow::autoconfigureGenerator);
+    QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateParser);
 
     this->show();
 
@@ -163,4 +168,9 @@ void MainWindow::autoconfigureGenerator()
 {
     BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
     MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
+}
+
+void MainWindow::generateParser()
+{
+    ParserGenerator parser_generator(output_path);
 }

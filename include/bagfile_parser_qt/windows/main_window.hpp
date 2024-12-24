@@ -19,6 +19,7 @@
 
 #include "bagfile_parser_qt/parser_generator/bag_analyzer.hpp"
 #include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
+#include "bagfile_parser_qt/parser_generator/parser_generator.hpp"
 
 class MainWindow : public QWidget
 {
@@ -41,6 +42,7 @@ class MainWindow : public QWidget
     QPushButton* select_topics_button;
     QPushButton* configure_depends_button;
     QPushButton* autoconfigure_generator_button;
+    QPushButton* generate_parser_button;
 
     std::string bagfile_path;
     std::string share_path;
@@ -58,6 +60,7 @@ class MainWindow : public QWidget
     void openSelectTopicsWindow();
     void openConfigureDependsWindow();
     void autoconfigureGenerator();
+    void generateParser();
 };
 
 #endif
