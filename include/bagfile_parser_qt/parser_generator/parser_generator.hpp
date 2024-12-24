@@ -77,6 +77,7 @@ class ParserGenerator
 
     void loadVectors();
     void setupFiles();
+    std::vector<std::string> split(std::string s, char delim);
 };
 
 #endif

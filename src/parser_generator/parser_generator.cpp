@@ -365,13 +365,13 @@ void ParserGenerator::writeSource()
     {
         output << "\tthis->" + msg_support_pairs.at(i).msg_support_var + " = rosidl_typesupport_cpp::get_message_type_support_handle<" + msg_support_pairs.at(i).msg_type + ">();\n";
     }
-    output<< "\n";
+    output << "\n";
 
     for (size_t i = 0; i < topic_sorting_data.size(); ++i)
     {
         temp = topic_sorting_data.at(i).topic_name;
         temp.erase(temp.begin());
-        output << "\tthis->" + slashToUnderscore(temp) + ".open(path + \"/" + output_filename_strings.at(i) +"\", std::ios_base::trunc);\n";
+        output << "\tthis->" + slashToUnderscore(temp) + ".open(path + \"/" + output_filename_strings.at(i) + "\", std::ios_base::trunc);\n";
     }
 
     output << "\n\tthis->parseBag();";
@@ -383,10 +383,10 @@ void ParserGenerator::writeSource()
     output << "{\n\tdelete reader;\n}\n\n";
 
     output << "void Rosbag2Parser::parseBag()\n{\n";
-    
+
     output << "\treader->open(storage_options, converter_options);\n";
     output << "\n\twhile(reader->has_next())\n\t{\n";
-    
+
     output << "\t\tstd::shared_ptr<rosbag2_storage::SerializedBagMessage> serialized_message = reader->read_next();\n\n";
     for (size_t i = 0; i < topic_sorting_data.size(); ++i)
     {
@@ -401,7 +401,129 @@ void ParserGenerator::writeSource()
 
     output << "\t}\n";
 
-    output << "}\n";
+    output << "}\n\n";
+
+    std::string message_data_filename;
+    std::string buffer;
+    std::ifstream message_data_file;
+    std::vector<std::string> types;
+    std::vector<std::string> field_names;
+    std::vector<std::string> field_array;
+    std::vector<std::string> message_structures;
+
+    for (size_t i = 0; i < topic_sorting_data.size(); ++i)
+    {
+        temp = topic_sorting_data.at(i).topic_name;
+        temp.erase(temp.begin());
+        output << "void Rosbag2Parser::" + snakeToCamel("parse_" + slashToUnderscore(temp)) + "(std::shared_ptr<rosbag2_storage::SerializedBagMessage> serialized_message)\n";
+        output << "{\n";
+
+        temp = topic_sorting_data.at(i).msg_var;
+        temp.erase(temp.end() - 4, temp.end());
+        message_data_filename = output_path + "/files/parser_files/msg_data/" + temp + ".log";
+        message_data_file.open(message_data_filename);
+
+        types.clear();
+        field_names.clear();
+        split_string.clear();
+        field_array.clear();
+        message_structures.clear();
+        while (!message_data_file.eof())
+        {
+            getline(message_data_file, buffer);
+            boost::split(split_string, buffer, boost::is_any_of("#"));
+            if (split_string.size() > 1)
+            {
+                types.push_back(convertFieldTypes(split_string.at(0)));
+                field_names.push_back(split_string.at(1));
+                if (split_string.size() == 3)
+                {
+                    temp = split_string.at(2);
+                    field_array.push_back(bangToDot(temp));
+                }
+                else
+                {
+                    field_array.push_back("");
+                }
+                message_structures.push_back(bangToDot(split_string.at(1)));
+            }
+        }
+        message_data_file.close();
+
+        temp = topic_sorting_data.at(i).topic_name;
+        temp.erase(temp.begin());
+        
+        output << "\tauto ros_message = std::make_shared<rosbag2_cpp::rosbag2_introspection_message_t>();\n\n";
+
+        output << "\tros_message->message = &" + topic_sorting_data.at(i).msg_var + ";\n";
+        output << "\tstd::string output_string = \"\";\n\n";
+
+        for (size_t j = 0; j < field_names.size(); j++)
+        {
+            if (field_array.at(j) == "")
+            {
+                //output << "\t" + bangToUnderscore(field_names.at(j)) + ".push_back(" + topic_sorting_data.at(i).msg_var + "." + message_structures.at(j) + ");\n";
+                if (types.at(j) == "string")
+                {
+                    output << "\toutput_string += " + topic_sorting_data.at(i).msg_var + "." + message_structures.at(j) + ";\n";
+                }
+                else 
+                {
+                    output << "\toutput_string += std::to_string(" + topic_sorting_data.at(i).msg_var + "." + message_structures.at(j) + ");\n";
+                }
+
+                output << "\toutput_string += \",\";\n";
+            }
+            else
+            {
+                //boost::split(split_string, field_array.at(j), boost::is_any_of("@"));
+                split_string = split(field_array.at(j), '@');
+                if (split_string.size() == 1)
+                {
+                    split_string.at(0).erase(split_string.at(0).end() - 6, split_string.at(0).end());
+                }
+
+                if (types.at(j) == "string")
+                {
+                    //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(std::to_string(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size()));\n";
+                    output << "\toutput_string += " + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size();\n";
+                }
+                else
+                {
+                    //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size());\n";
+                    output << "\toutput_string += std::to_string(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size());\n";
+                }
+                output << "\toutput_string += \",\";\n";
+
+                output << "\tfor (size_t j = 0; j < " + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size(); j++)\n\t{\n";
+
+                //boost::split(split_string, field_array.at(j), boost::is_any_of("@"));
+                split_string = split(field_array.at(j), '@');
+                if (split_string.size() > 1)
+                {
+                    temp = split_string.at(0) + ".at(j)" + split_string.at(1);
+                    temp.erase(temp.end() - 6, temp.end());
+                }
+                else
+                {
+                    temp = split_string.at(0);
+                    temp.erase(temp.end() - 6, temp.end());
+                    temp.append(".at(j)");
+                }
+
+                //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(" + topic_sorting_data.at(i).msg_var + "." + temp + ");\n";
+                output << "\t\toutput_string += " + topic_sorting_data.at(i).msg_var + "." + temp + ";\n";
+                output << "\t\toutput_string += \",\";\n";
+                output << "\t}\n";
+            }
+        }
+
+        output << "\toutput_string += \"\\n\";\n";
+
+        // TODO: WRITE OUTPUT_STRING TO TOPIC CSV FILE
+
+        output << "}\n\n";
+    }
 
     source_file.open(source_filename, std::ios_base::trunc);
     source_file << output.str();
@@ -506,4 +628,35 @@ std::string ParserGenerator::snakeToCamel(std::string str)
     }
 
     return str;
+}
+
+std::string ParserGenerator::convertFieldTypes(std::string str)
+{
+    if (str == "string" || str == "string[]")
+    {
+        return "string";
+    }
+    else if (str == "char" || str == "char[]")
+    {
+        return "string";
+    }
+
+    else
+    {
+        return "double";
+    }
+}
+
+std::vector<std::string> ParserGenerator::split(std::string s, char delim)
+{
+    std::vector<std::string> result;
+    std::stringstream ss(s);
+    std::string item;
+
+    while (getline(ss, item, delim))
+    {
+        result.push_back(item);
+    }
+
+    return result;
 }
