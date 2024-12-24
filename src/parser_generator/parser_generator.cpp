@@ -206,6 +206,8 @@ void ParserGenerator::writeCMakeLists()
     output << "if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES \"Clang\")\n  add_compile_options(-Wall -Wextra -Wpedantic)\nendif()\n\n";
     output << "find_package(ament_cmake REQUIRED)\n";
 
+    output << "find_package(rclcpp)\n";
+    output << "find_package(rosbag2_cpp)\n";
     std::string depends_list;
     for (size_t i = 0; i < depends.size(); i++)
     {
@@ -215,7 +217,7 @@ void ParserGenerator::writeCMakeLists()
 
     output << "\ninclude_directories(include)\n\n";
     output << "add_executable(" + package_name + " src/main.cpp src/" + package_name + ".cpp)\n";
-    output << "ament_target_dependencies(" + package_name + depends_list + ")\n\n";
+    output << "ament_target_dependencies(" + package_name + " rclcpp rosbag2_cpp" + depends_list + ")\n\n";
 
     output << "install(\n  TARGETS " + package_name + "\n  DESTINATION lib/${PROJECT_NAME}/\n)\n\n";
     output << "install(\n  DIRECTORY launch\n  DESTINATION share/${PROJECT_NAME}/\n)\n\n";
@@ -237,6 +239,9 @@ void ParserGenerator::writePackageXml()
     output << "<package format=\"3\">\n";
     output << "  <name>" + package_name + "</name>\n  <version>0.0.0</version>\n  <description>TODO: Package description</description>\n  <maintainer email=\"user@todo.todo\">TODO</maintainer>\n  <license>TODO: License declaration</license>\n\n";
     output << "  <buildtool_depend>ament_cmake</buildtool_depend>\n\n";
+
+    output << "  <depend>rclcpp</depend>\n";
+    output << "  <depend>rosbag2_cpp</depend>\n";
 
     for (size_t i = 0; i < depends.size(); i++)
     {
@@ -339,7 +344,7 @@ void ParserGenerator::writeSource()
 
     output << "#include \"" + package_name + "/" + package_name + ".hpp\"\n\n";
 
-    output << class_name + "::" + class_name + "() : Node(\"~\")\n{\n";
+    output << class_name + "::" + class_name + "() : Node(\"rosbag2_parser\")\n{\n";
 
     std::ifstream bag_file_path;
     bag_file_path.open("../config/path.txt");
@@ -382,11 +387,8 @@ void ParserGenerator::writeSource()
     // Destructor
     output << class_name + "::~" + class_name + "()\n";
     output << "{\n\tdelete reader;\n\n";
-    std::cout<<topic_sorting_data.size()<<std::endl;
     for (size_t i = 0; i < topic_sorting_data.size(); ++i)
     {
-        std::cout<<i<<"/"<<topic_sorting_data.size()<<std::endl;
-
         temp = topic_sorting_data.at(i).topic_name;
         temp.erase(temp.begin());
         output << "\t" + slashToUnderscore(temp) + ".close();\n";
@@ -412,6 +414,7 @@ void ParserGenerator::writeSource()
 
     output << "\t}\n";
 
+    output << "\tstd::cout<<\"Parser Finished\"<<std::endl;\n";
     output << "}\n\n";
 
     std::string message_data_filename;
@@ -465,8 +468,8 @@ void ParserGenerator::writeSource()
         temp.erase(temp.begin());
         
         output << "\tauto ros_message = std::make_shared<rosbag2_cpp::rosbag2_introspection_message_t>();\n\n";
-
         output << "\tros_message->message = &" + topic_sorting_data.at(i).msg_var + ";\n";
+        output << "\tcdr_deserializer->deserialize(serialized_message, " + topic_sorting_data.at(i).msg_support_var + ", ros_message);\n";
         output << "\tstd::string output_string = \"\";\n\n";
 
         for (size_t j = 0; j < field_names.size(); j++)
@@ -557,7 +560,7 @@ void ParserGenerator::writeConfig()
     std::stringstream output;
     output << "rosbag2_parser:\n";
     output << "  ros__parameters:\n";
-    output << "    path: \"" + filepath + "\"\n";
+    output << "    output_file_path: \"" + filepath + "\"\n";
     output << "    bagfile: \"" + bag_filename + "\"\n";
 
     config_file.open(config_filename, std::ios_base::trunc);
@@ -603,9 +606,11 @@ void ParserGenerator::writeMain()
     std::string class_name = "Rosbag2Parser";
 
     output << "#include \"" + package_name + "/" + package_name + ".hpp\"\n\n";
-    output << "int main()\n{\n";
+    output << "int main(int argc, char *argv[])\n{\n";
     output << "\tstd::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();\n";
-    output << "\t" << class_name + " parser;\n";
+    output << "\trclcpp::init(argc, argv);\n";
+    output << "\tstd::make_shared<Rosbag2Parser>();\n";
+    output << "\trclcpp::shutdown();\n";
     output << "\tstd::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();\n";
     output << "\tstd::cout << \"Total Runtime: \" << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << \" seconds\" << std::endl;\n";
     output << "\treturn 0;\n}";

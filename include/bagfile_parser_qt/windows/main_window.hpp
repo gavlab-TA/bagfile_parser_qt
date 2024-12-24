@@ -43,6 +43,8 @@ class MainWindow : public QWidget
     QPushButton* configure_depends_button;
     QPushButton* autoconfigure_generator_button;
     QPushButton* generate_parser_button;
+    QPushButton* build_parser_button;
+    QPushButton* run_csv_parser_button;
 
     std::string bagfile_path;
     std::string share_path;
@@ -61,6 +63,8 @@ class MainWindow : public QWidget
     void openConfigureDependsWindow();
     void autoconfigureGenerator();
     void generateParser();
+    void buildParser();
+    void runCsvParser();
 };
 
 #endif

@@ -31,6 +31,12 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->autoconfigure_generator_button = new QPushButton();
     this->autoconfigure_generator_button->setText("Autoconfigure Generator");
 
+    this->build_parser_button = new QPushButton();
+    this->build_parser_button->setText("Build Parser");
+
+    this->run_csv_parser_button = new QPushButton();
+    this->run_csv_parser_button->setText("Run CSV Parser");
+
     bag_selected = false;
 
     this->workflow_layout->addLayout(this->bag_select_layout);
@@ -39,6 +45,8 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->workflow_layout->addWidget(this->autoconfigure_generator_button);
     this->workflow_layout->addWidget(this->generate_parser_button);
+    this->workflow_layout->addWidget(this->build_parser_button);
+    this->workflow_layout->addWidget(this->run_csv_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
     this->setLayout(this->main_layout);
@@ -49,6 +57,8 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
     QObject::connect(this->autoconfigure_generator_button, &QPushButton::released, this, &MainWindow::autoconfigureGenerator);
     QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateParser);
+    QObject::connect(this->build_parser_button, &QPushButton::released, this, &MainWindow::buildParser);
+    QObject::connect(this->run_csv_parser_button, &QPushButton::released, this, &MainWindow::runCsvParser);
 
     this->show();
 
@@ -173,4 +183,22 @@ void MainWindow::autoconfigureGenerator()
 void MainWindow::generateParser()
 {
     ParserGenerator parser_generator(output_path, bagfile_path);
+}
+
+void MainWindow::buildParser()
+{
+    std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+    if (system(command.c_str()))
+    {
+        std::cout << "Issue Compiling Parser" << std::endl;
+    }
+}
+
+void MainWindow::runCsvParser()
+{
+    std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 launch rosbag2_parser rosbag2_parser.launch.py'";
+    if (system(command.c_str()))
+    {
+        std::cout << "Issue running parser" << std::endl;
+    }
 }

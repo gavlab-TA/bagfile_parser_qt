@@ -133,7 +133,7 @@ void ConfigureWindow::buildWorkspace()
 void ConfigureWindow::runBuild()
 {
     std::string command;
-    command = "cd " + output_path + " && colcon build";
+    command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
 
     int res = system(command.c_str());
     if (res)
