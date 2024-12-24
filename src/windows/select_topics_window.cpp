@@ -19,6 +19,8 @@ SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, cons
         if (this->data.topics_with_message_count.at(i).message_count > 0)
         {
             items.push_back(QString(this->data.topics_with_message_count.at(i).topic_metadata.name.c_str()));
+            valid_topics.push_back(this->data.topics_with_message_count.at(i).topic_metadata.name);
+            valid_msgs.push_back(this->data.topics_with_message_count.at(i).topic_metadata.type);
         }
     }    
 
@@ -65,7 +67,9 @@ void SelectTopicsWindow::saveSelected()
         if ((int) i == save_indices.at(index))
         {
             index++;
-            std::string line = data.topics_with_message_count.at(i).topic_metadata.name + "," + data.topics_with_message_count.at(i).topic_metadata.type + "\n";
+            //std::string line = data.topics_with_message_count.at(i).topic_metadata.name + "," + data.topics_with_message_count.at(i).topic_metadata.type + "\n";
+            std::string line = valid_topics.at(i) + "," + valid_msgs.at(i) + "\n";
+
             file << line;
         }
     }

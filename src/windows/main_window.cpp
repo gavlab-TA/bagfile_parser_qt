@@ -37,6 +37,9 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->run_csv_parser_button = new QPushButton();
     this->run_csv_parser_button->setText("Run CSV Parser");
 
+    this->generate_matlab_parser_button = new QPushButton();
+    this->generate_matlab_parser_button->setText("Generate Matlab Parser");
+
     bag_selected = false;
 
     this->workflow_layout->addLayout(this->bag_select_layout);
@@ -47,6 +50,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->workflow_layout->addWidget(this->generate_parser_button);
     this->workflow_layout->addWidget(this->build_parser_button);
     this->workflow_layout->addWidget(this->run_csv_parser_button);
+    this->workflow_layout->addWidget(this->generate_matlab_parser_button);
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
     this->setLayout(this->main_layout);
@@ -59,6 +63,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateParser);
     QObject::connect(this->build_parser_button, &QPushButton::released, this, &MainWindow::buildParser);
     QObject::connect(this->run_csv_parser_button, &QPushButton::released, this, &MainWindow::runCsvParser);
+    QObject::connect(this->generate_matlab_parser_button, &QPushButton::released, this, &MainWindow::generateMatlabParser);
 
     this->show();
 
@@ -201,4 +206,9 @@ void MainWindow::runCsvParser()
     {
         std::cout << "Issue running parser" << std::endl;
     }
+}
+
+void MainWindow::generateMatlabParser()
+{
+    MatlabGenerator matlab_generator(bagfile_path, output_path);
 }

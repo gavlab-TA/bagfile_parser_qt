@@ -20,6 +20,7 @@
 #include "bagfile_parser_qt/parser_generator/bag_analyzer.hpp"
 #include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
 #include "bagfile_parser_qt/parser_generator/parser_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/matlab_generator.hpp"
 
 class MainWindow : public QWidget
 {
@@ -45,6 +46,7 @@ class MainWindow : public QWidget
     QPushButton* generate_parser_button;
     QPushButton* build_parser_button;
     QPushButton* run_csv_parser_button;
+    QPushButton* generate_matlab_parser_button;
 
     std::string bagfile_path;
     std::string share_path;
@@ -65,6 +67,7 @@ class MainWindow : public QWidget
     void generateParser();
     void buildParser();
     void runCsvParser();
+    void generateMatlabParser();
 };
 
 #endif

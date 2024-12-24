@@ -29,6 +29,8 @@ class SelectTopicsWindow : public QDialog
 
     rosbag2_storage::BagMetadata data;
     std::string output_path;
+    std::vector<std::string> valid_topics;
+    std::vector<std::string> valid_msgs;
 
     private slots:
     void saveSelected();
