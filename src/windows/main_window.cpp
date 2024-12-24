@@ -127,7 +127,7 @@ void MainWindow::setupFileLocations()
 void MainWindow::openBagSelectWindow()
 {
     QWidget w;
-    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "/home/kyle/Data/Vegas2025_data/2024-12-16_VEGAS_run5", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "/home/kyle/Data/Vegas2025_data/2024-12-18_VEGAS_run1/vehicle/2024-12-18_VEGAS_run1_vehicle_1134/", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     bagfile_path = path.toStdString();
 
     if (bagfile_path != "")

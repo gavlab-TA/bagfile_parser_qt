@@ -12,13 +12,74 @@ MatlabGenerator::MatlabGenerator(const std::string &output_file_path, const std:
     {
         this->output_file_path += split_string.at(i) + "/";
     }
+    this->output_file_path += "parse_csv2mat.m";
 
     loadTopicData();
+    generateMatlabParser();
 }
 
 MatlabGenerator::~MatlabGenerator()
 {
 
+}
+
+void MatlabGenerator::generateMatlabParser()
+{
+    matlab_parser.open(output_file_path, std::ios_base::trunc);
+
+    std::stringstream output;
+    output << "clc, clear;\n";
+
+    for (size_t i = 0; i < topic_data.size(); ++i)
+    {
+        output << "fprintf(\"" + std::to_string(i+1) + "/" + std::to_string(topic_data.size()) + " - " + topic_data.at(i).topic_name + "\\n\")\n";
+        output << topic_data.at(i).topic_name + "_table = readtable(\"" + topic_data.at(i).topic_name + ".csv\", VariableNamingRule='preserve');\n";
+        output << topic_data.at(i).topic_name + "_array = table2cell(" + topic_data.at(i).topic_name + "_table);\n";
+
+        output << "\n";
+        output << "[r, ~] = size(" + topic_data.at(i).topic_name + "_array);\n";
+        output << "for i = 1:r\n";
+        output << "\tcolumn_index = 1;\n";
+        for (size_t j = 0; j < topic_data.at(i).msg_data.field_names.size(); ++j)
+        {
+            if (topic_data.at(i).msg_data.is_array_field.at(j))
+            {
+                std::string temp = topic_data.at(i).msg_data.field_names.at(j);
+                temp.pop_back();
+                output << "\tarr_size = str2double(" + topic_data.at(i).topic_name + "_array{i, column_index});\n";
+                output << "\tcolumn_index = column_index + 1;\n";
+                output << "\tfor j = 1:arr_size\n";
+                output << "\t\tval = ";
+                output << topic_data.at(i).topic_name + "_array{i, column_index+j-1};\n";
+                output << "\t\tnum = str2double(val);\n";
+                output << "\t\tif isnan(num)\n";
+                output << "\t\t\t" + topic_data.at(i).topic_name + "." + temp + "(i).data{j} = val;\n";
+                output << "\t\telse\n";
+                output << "\t\t\t" + topic_data.at(i).topic_name + "." + temp + "(i).data(j) = num;\n";
+                output << "\t\tend\n";
+                output << "\tend\n";
+                output << "\tcolumn_index = column_index + arr_size;\n";
+            }
+            else
+            {
+                output << "\tval = ";
+                output << topic_data.at(i).topic_name + "_array{i, column_index};\n";
+                output << "\tnum = str2double(val);\n";
+                output << "\tif isnan(num)\n";
+                output << "\t\t" + topic_data.at(i).topic_name + "." + topic_data.at(i).msg_data.field_names.at(j) + "{i} = val;\n";
+                output << "\telse\n";
+                output << "\t\t" + topic_data.at(i).topic_name + "." + topic_data.at(i).msg_data.field_names.at(j) + "(i) = num;\n";
+                output << "\tend\n";
+                output << "\n";
+                output << "\tcolumn_index = column_index + 1;\n";
+
+            }
+        }
+        output << "end\n";
+        output << "\n\n";
+    }
+    matlab_parser << output.str();
+    matlab_parser.close();
 }
 
 void MatlabGenerator::loadTopicData()
@@ -38,12 +99,15 @@ void MatlabGenerator::loadTopicData()
             MessageData msg_data = loadFieldNames(parser_path + "/files/parser_files/msg_data/" + temp + ".log");
 
             TopicData buffer;
-            buffer.topic_name = split_string.front();
+            temp = slashToUnderscore(split_string.front());
+            temp.erase(temp.begin());
+            buffer.topic_name = temp;
             buffer.msg_data = msg_data;
 
             topic_data.push_back(buffer);
         }
     }
+    file.close();
 }
 
 MatlabGenerator::MessageData MatlabGenerator::loadFieldNames(const std::string &msg_data_filename)
@@ -77,7 +141,7 @@ MatlabGenerator::MessageData MatlabGenerator::loadFieldNames(const std::string &
             data.is_array_field.push_back(is_array);
         }
     }
-
+    file.close();
     return data;
 }
 

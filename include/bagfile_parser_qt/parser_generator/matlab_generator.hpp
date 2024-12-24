@@ -6,6 +6,7 @@
 #include <fstream>
 #include <boost/algorithm/string.hpp>
 #include <iostream>
+#include <sstream>
 
 class MatlabGenerator
 {
@@ -31,6 +32,7 @@ class MatlabGenerator
     std::vector<TopicData> topic_data;
 
     void loadTopicData();
+    void generateMatlabParser();
     std::string slashToUnderscore(std::string str);
     MessageData loadFieldNames(const std::string &msg_data_filename);
 };

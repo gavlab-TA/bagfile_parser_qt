@@ -526,7 +526,14 @@ void ParserGenerator::writeSource()
                 }
 
                 //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(" + topic_sorting_data.at(i).msg_var + "." + temp + ");\n";
-                output << "\t\toutput_string += " + topic_sorting_data.at(i).msg_var + "." + temp + ";\n";
+                if (types.at(j) == "string")
+                {
+                    output << "\t\toutput_string += " + topic_sorting_data.at(i).msg_var + "." + temp + ";\n";
+                }
+                else
+                {
+                    output << "\t\toutput_string += std::to_string(" + topic_sorting_data.at(i).msg_var + "." + temp + ");\n";
+                }
                 output << "\t\toutput_string += \",\";\n";
                 output << "\t}\n";
             }
