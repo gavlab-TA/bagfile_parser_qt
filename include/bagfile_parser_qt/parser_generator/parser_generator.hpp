@@ -12,7 +12,7 @@
 class ParserGenerator
 {
     public:
-    ParserGenerator(const std::string &output_path);
+    ParserGenerator(const std::string &output_path, const std::string &bag_filename);
     ~ParserGenerator();
 
     struct MsgSupportPair{
@@ -39,6 +39,7 @@ class ParserGenerator
     private:
     std::string output_path;
     std::string output_package_path;
+    std::string bag_filename;
 
     std::ofstream package_xml_file;
     std::ofstream cmake_lists_file;

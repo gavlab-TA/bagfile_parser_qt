@@ -172,5 +172,5 @@ void MainWindow::autoconfigureGenerator()
 
 void MainWindow::generateParser()
 {
-    ParserGenerator parser_generator(output_path);
+    ParserGenerator parser_generator(output_path, bagfile_path);
 }

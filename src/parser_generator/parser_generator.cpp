@@ -1,9 +1,10 @@
 #include "bagfile_parser_qt/parser_generator/parser_generator.hpp"
 
-ParserGenerator::ParserGenerator(const std::string &output_path)
+ParserGenerator::ParserGenerator(const std::string &output_path, const std::string &bag_filename)
 {
     this->output_path = output_path;
     this->output_package_path = output_path + "/src/rosbag2_parser/";
+    this->bag_filename = bag_filename;
 
     this->loadVectors();
     this->setupFiles();
@@ -380,7 +381,17 @@ void ParserGenerator::writeSource()
 
     // Destructor
     output << class_name + "::~" + class_name + "()\n";
-    output << "{\n\tdelete reader;\n}\n\n";
+    output << "{\n\tdelete reader;\n\n";
+    std::cout<<topic_sorting_data.size()<<std::endl;
+    for (size_t i = 0; i < topic_sorting_data.size(); ++i)
+    {
+        std::cout<<i<<"/"<<topic_sorting_data.size()<<std::endl;
+
+        temp = topic_sorting_data.at(i).topic_name;
+        temp.erase(temp.begin());
+        output << "\t" + slashToUnderscore(temp) + ".close();\n";
+    }
+    output << "}\n\n";
 
     output << "void Rosbag2Parser::parseBag()\n{\n";
 
@@ -520,7 +531,9 @@ void ParserGenerator::writeSource()
 
         output << "\toutput_string += \"\\n\";\n";
 
-        // TODO: WRITE OUTPUT_STRING TO TOPIC CSV FILE
+        temp = topic_sorting_data.at(i).topic_name;
+        temp.erase(temp.begin());
+        output << "\n\t" + slashToUnderscore(temp) + " << output_string;\n";
 
         output << "}\n\n";
     }
@@ -532,15 +545,76 @@ void ParserGenerator::writeSource()
 
 void ParserGenerator::writeConfig()
 {
+    // Get Path from Bagfile
+    std::vector<std::string> split_string;
+    boost::split(split_string, bag_filename, boost::is_any_of("/"));
+    std::string filepath = "";
+    for (size_t i = 0; i < split_string.size()-1; ++i)
+    {
+        filepath += split_string.at(i) + "/";
+    }
+
+    std::stringstream output;
+    output << "rosbag2_parser:\n";
+    output << "  ros__parameters:\n";
+    output << "    path: \"" + filepath + "\"\n";
+    output << "    bagfile: \"" + bag_filename + "\"\n";
+
+    config_file.open(config_filename, std::ios_base::trunc);
+    config_file << output.str();
+    config_file.close();
 }
 
 void ParserGenerator::writeLaunch()
 {
+    std::stringstream output;
+    std::string package_name = "rosbag2_parser";
+    output << "import os\n";
+    output << "from launch import LaunchDescription\n";
+    output << "from launch_ros.actions import Node\n";
+    output << "from launch.actions import IncludeLaunchDescription\n";
+    output << "from ament_index_python.packages import get_package_share_directory\n\n\n";
+
+    output << "def generate_launch_description():\n\n";
+    output << "\tconfig_path = os.path.join(\n";
+    output << "\t\tget_package_share_directory(\'" + package_name + "\'),\n";
+    output << "\t\t\'config\'\n\t\t)\n\n";
+
+    output << "\ttemplate_node_description = Node(\n";
+    output << "\t\t\tpackage=\'" + package_name + "\',\n";
+    output << "\t\t\texecutable=\'" + package_name + "\',\n";
+    output << "\t\t\tname=\'" + package_name + "\',\n";
+    output << "\t\t\toutput=\'screen\', \n";
+    output << "\t\t\tparameters=[os.path.join(config_path, \'params.yaml\')]\n\t\t)\n\n";
+
+    output << "\treturn LaunchDescription([\n";
+    output << "\t\ttemplate_node_description,\n";
+    output << "\t])";
+
+    launch_file.open(launch_filename);
+    launch_file << output.str();
+    launch_file.close();
 }
 
 void ParserGenerator::writeMain()
 {
+    std::stringstream output;
+    std::string package_name = "rosbag2_parser";
+    std::string class_name = "Rosbag2Parser";
+
+    output << "#include \"" + package_name + "/" + package_name + ".hpp\"\n\n";
+    output << "int main()\n{\n";
+    output << "\tstd::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();\n";
+    output << "\t" << class_name + " parser;\n";
+    output << "\tstd::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();\n";
+    output << "\tstd::cout << \"Total Runtime: \" << std::chrono::duration_cast<std::chrono::seconds>(end - begin).count() << \" seconds\" << std::endl;\n";
+    output << "\treturn 0;\n}";
+
+    main_file.open(main_filename);
+    main_file << output.str();
+    main_file.close();
 }
+
 
 std::vector<std::string> ParserGenerator::readFile(const std::string &filename)
 {
