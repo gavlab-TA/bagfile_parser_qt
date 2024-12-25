@@ -34,7 +34,9 @@ class MatlabGenerator
     void loadTopicData();
     void generateMatlabParser();
     std::string slashToUnderscore(std::string str);
+    std::string bangToUnderscore(std::string str);
     MessageData loadFieldNames(const std::string &msg_data_filename);
+    std::string removeSpecialChars(std::string str);
 };
 
 #endif
