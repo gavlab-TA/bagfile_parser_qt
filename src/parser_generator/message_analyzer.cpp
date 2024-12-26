@@ -20,49 +20,49 @@ MessageAnalyzer::MessageAnalyzer(const std::string &parser_files_path, const std
         }
     }
 
-    std::cout<<"Retrieved Messages"<<std::endl;
+    //std::cout<<"Retrieved Messages"<<std::endl;
 
     makeLogs(message_types);
-    std::cout<<"Logs Created"<<std::endl;
+    //std::cout<<"Logs Created"<<std::endl;
 
     scanForUniqueFields(message_types);
-    std::cout<<"Unique Fields"<<std::endl;
+    //std::cout<<"Unique Fields"<<std::endl;
 
     decomment(message_types);
-    std::cout<<"Remove Comment"<<std::endl;
+    //std::cout<<"Remove Comment"<<std::endl;
 
     removeOptions(message_types);
-    std::cout<<"Remove Options"<<std::endl;
+    //std::cout<<"Remove Options"<<std::endl;
 
     deblank(message_types);
-    std::cout<<"Remove Blanks"<<std::endl;
+    //std::cout<<"Remove Blanks"<<std::endl;
 
     cleanupExtraSpaces(message_types);
-    std::cout<<"Remove Extra Spaces"<<std::endl;
+    //std::cout<<"Remove Extra Spaces"<<std::endl;
 
     collapseTabs(message_types);
-    std::cout<<"Collapse Tabs"<<std::endl;
+    //std::cout<<"Collapse Tabs"<<std::endl;
 
     prepForSplit(message_types);
-    std::cout<<"Prep For Splits"<<std::endl;
+    //std::cout<<"Prep For Splits"<<std::endl;
 
     applyArraysToSubFields(message_types);
-    std::cout<<"Handle Arrays"<<std::endl;
+    //std::cout<<"Handle Arrays"<<std::endl;
 
     setupFieldNamespaces(message_types);
-    std::cout<<"Setup Namespaces"<<std::endl;
+    //std::cout<<"Setup Namespaces"<<std::endl;
 
     clearArrays(message_types);
-    std::cout<<"Clear Arrays"<<std::endl;
+    //std::cout<<"Clear Arrays"<<std::endl;
 
     addArrayInfo(message_types);
-    std::cout<<"Add Array Info"<<std::endl;
+    //std::cout<<"Add Array Info"<<std::endl;
 
     removeFieldNesting(message_types);
-    std::cout<<"Remove Field Nesting"<<std::endl;
+    //std::cout<<"Remove Field Nesting"<<std::endl;
 
     removeExtraSpaces(message_types);
-    std::cout<<"Remove Extra Spaces"<<std::endl;
+    //std::cout<<"Remove Extra Spaces"<<std::endl;
 }
 
 MessageAnalyzer::~MessageAnalyzer()
@@ -660,7 +660,7 @@ void MessageAnalyzer::applyArraysToSubFields(const std::vector<std::string> &mes
         filename = parser_files_path + "msg_data/" + messageTypesToSnake(message_types.at(i)) + ".log";
         max_level = 0;
 
-        std::cout<<filename<<std::endl;
+        //std::cout<<filename<<std::endl;
 
         // 1st pass - getting file size vars
         file.open(filename);

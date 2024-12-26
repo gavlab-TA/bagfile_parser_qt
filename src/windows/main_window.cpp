@@ -49,9 +49,12 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->run_matlab_parser_button = new QPushButton();
     this->run_matlab_parser_button->setText("Run Matlab Parser");
 
-    this->parser_generator_layout = new QHBoxLayout();
-    this->csv_parser_layout = new QVBoxLayout();
-    this->matlab_parser_layout = new QVBoxLayout();
+    this->csv_parser_label = new QLabel();
+    this->csv_parser_label->setText("CSV Parser");
+    this->matlab_parser_label = new QLabel();
+    this->matlab_parser_label->setText("Matlab Parser");
+
+    this->parser_generator_layout = new QGridLayout();
 
     bag_selected = false;
 
@@ -61,18 +64,29 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->workflow_layout->addWidget(this->configure_parser_button);
     this->workflow_layout->addWidget(this->autoconfigure_generator_button);
 
-    this->csv_parser_layout->addWidget(this->generate_parser_button);
-    this->csv_parser_layout->addWidget(this->build_csv_parser_button);
-    this->csv_parser_layout->addWidget(this->run_csv_parser_button);
-    this->csv_parser_layout->addWidget(this->generate_csv_matlab_parser_button);
+    this->generate_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->build_csv_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->run_csv_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->generate_csv_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->generate_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->build_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    this->run_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-    this->matlab_parser_layout->addWidget(this->generate_matlab_parser_button);
-    this->matlab_parser_layout->addWidget(this->build_matlab_parser_button);
-    this->matlab_parser_layout->addWidget(this->run_matlab_parser_button);
+    this->parser_generator_layout->addWidget(this->csv_parser_label, 0, 0, Qt::AlignCenter);
+    this->parser_generator_layout->addWidget(this->matlab_parser_label, 0, 1, Qt::AlignCenter);
+    this->parser_generator_layout->addWidget(this->generate_parser_button, 1, 0);
+    this->parser_generator_layout->addWidget(this->build_csv_parser_button, 2, 0);
+    this->parser_generator_layout->addWidget(this->run_csv_parser_button, 3, 0);
+    this->parser_generator_layout->addWidget(this->generate_csv_matlab_parser_button, 4, 0);
+    this->parser_generator_layout->addWidget(this->generate_matlab_parser_button, 1, 1);
+    this->parser_generator_layout->addWidget(this->build_matlab_parser_button, 2, 1);
+    this->parser_generator_layout->addWidget(this->run_matlab_parser_button, 3, 1);
 
-    this->parser_generator_layout->addLayout(this->csv_parser_layout);
-    this->parser_generator_layout->addLayout(this->matlab_parser_layout);
     this->workflow_layout->addLayout(this->parser_generator_layout);
+
+    this->reset_workspace_button = new QPushButton();
+    this->reset_workspace_button->setText("Reset Parser");
+    this->workflow_layout->addWidget(this->reset_workspace_button);
 
     this->main_layout->addLayout(this->workflow_layout, 0, 0, Qt::AlignCenter);
 
@@ -90,6 +104,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->generate_matlab_parser_button, &QPushButton::released, this, &MainWindow::generateMatlabParser);
     QObject::connect(this->build_matlab_parser_button, &QPushButton::released, this, &MainWindow::buildMatlabParser);
     QObject::connect(this->run_matlab_parser_button, &QPushButton::released, this, &MainWindow::runMatlabParser);
+    QObject::connect(this->reset_workspace_button, &QPushButton::released, this, &MainWindow::resetParser);
 
     this->show();
 
@@ -100,7 +115,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     file.close();
     this->output_path += "/generated";
 
-    this->setupFileLocations();    
+    this->setupFileLocations();
 }
 
 MainWindow::~MainWindow()
@@ -123,7 +138,7 @@ void MainWindow::setupFileLocations()
         int res = system(command.c_str());
         if (res)
         {
-            std::cout<<"Issue creating logfile space"<<std::endl;
+            std::cout << "Issue creating logfile space" << std::endl;
         }
     }
 
@@ -134,7 +149,7 @@ void MainWindow::setupFileLocations()
         int res = system(command.c_str());
         if (res)
         {
-            std::cout<<"Issue creating parser resource space"<<std::endl;
+            std::cout << "Issue creating parser resource space" << std::endl;
         }
     }
 
@@ -145,7 +160,7 @@ void MainWindow::setupFileLocations()
         int res = system(command.c_str());
         if (res)
         {
-            std::cout<<"Issue creating message data space"<<std::endl;
+            std::cout << "Issue creating message data space" << std::endl;
         }
     }
 }
@@ -201,7 +216,7 @@ void MainWindow::openSelectTopicsWindow()
 
 void MainWindow::openConfigureDependsWindow()
 {
-    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path); 
+    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path);
     dependency_window->show();
 }
 
@@ -243,7 +258,7 @@ void MainWindow::generateMatlabParser()
 {
     MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path);
     std::string command = "rm " + output_path + "/src/TinyMAT && ln -s " + output_path + "/../external/TinyMAT " + output_path + "/src/";
-    std::cout<<command<<std::endl;
+    std::cout << command << std::endl;
     if (system(command.c_str()))
     {
         std::cout << "Issue Creating symlink for TinyMAT" << std::endl;
@@ -265,5 +280,28 @@ void MainWindow::runMatlabParser()
     if (system(command.c_str()))
     {
         std::cout << "Issue running parser" << std::endl;
-    }   
+    }
+}
+
+void MainWindow::resetParser()
+{
+    QMessageBox msg_box;
+    msg_box.setIcon(QMessageBox::Question);
+    msg_box.setWindowTitle("Warning");
+    msg_box.setText("This will remove all message files. Are you sure?");
+    msg_box.setStandardButtons(QMessageBox::Yes | QMessageBox::Cancel);
+    msg_box.setDefaultButton(QMessageBox::Cancel);
+
+    int result = msg_box.exec();
+    if (result == QMessageBox::Yes)
+    {
+        std::string command = "cd " + output_path + " && rm install log src build files";
+        if (system(command.c_str()))
+        {
+            std::cout << "Issue clearing out " + output_path << std::endl;
+        }
+
+        this->close();
+        this->show();
+    }
 }

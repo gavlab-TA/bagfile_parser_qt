@@ -35,9 +35,7 @@ class MainWindow : public QWidget
     QGridLayout* main_layout;
     QVBoxLayout* workflow_layout;
     QVBoxLayout* bag_select_layout;
-    QHBoxLayout* parser_generator_layout;
-    QVBoxLayout* csv_parser_layout;
-    QVBoxLayout* matlab_parser_layout;
+    QGridLayout* parser_generator_layout;
 
     QPushButton* bag_select_button;
     QLabel* bag_path_label;
@@ -58,6 +56,8 @@ class MainWindow : public QWidget
     QPushButton* run_matlab_parser_button;
 
     QPushButton* reset_workspace_button;
+    QLabel* csv_parser_label;
+    QLabel* matlab_parser_label;
 
 
     std::string bagfile_path;
@@ -84,6 +84,7 @@ class MainWindow : public QWidget
     void generateMatlabParser();
     void buildMatlabParser();
     void runMatlabParser();
+    void resetParser();
 };
 
 #endif
