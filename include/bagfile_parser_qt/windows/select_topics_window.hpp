@@ -27,13 +27,21 @@ class SelectTopicsWindow : public QDialog
     QListWidget *list_widget;
     QPushButton *select_button;
 
+    QHBoxLayout *selection_layout;
+    QPushButton *select_all_button;
+    QPushButton *unselect_all_button;
+
     rosbag2_storage::BagMetadata data;
     std::string output_path;
     std::vector<std::string> valid_topics;
     std::vector<std::string> valid_msgs;
 
+    QStringList items;
+
     private slots:
     void saveSelected();
+    void selectAll();
+    void unselectAll();
 };
 
 #endif

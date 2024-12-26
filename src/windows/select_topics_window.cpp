@@ -12,8 +12,6 @@ SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, cons
 
     list_widget = new QListWidget();
 
-    QStringList items;
-
     for (size_t i = 0; i < this->data.topics_with_message_count.size(); i++)
     {
         if (this->data.topics_with_message_count.at(i).message_count > 0)
@@ -24,19 +22,33 @@ SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, cons
         }
     }    
 
+
+    list_widget = new QListWidget();
     for (const QString &item_text : items)
     {
         QListWidgetItem *item = new QListWidgetItem(item_text);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        item->setCheckState(Qt::Checked);
+        item->setCheckState(Qt::Unchecked);
         this->list_widget->addItem(item);
     }
 
     layout->addWidget(list_widget);
+
+    this->selection_layout = new QHBoxLayout();
+    this->select_all_button = new QPushButton();
+    this->select_all_button->setText("Select All");
+    this->unselect_all_button = new QPushButton();
+    this->unselect_all_button->setText("Clear All");
+
+    this->selection_layout->addWidget(select_all_button);
+    this->selection_layout->addWidget(unselect_all_button);
+    layout->addLayout(selection_layout);
     
     this->select_button = new QPushButton();
     this->select_button->setText("Save Selected Topics");
 
+    QObject::connect(this->select_all_button, &QPushButton::released, this, &SelectTopicsWindow::selectAll);
+    QObject::connect(this->unselect_all_button, &QPushButton::released, this, &SelectTopicsWindow::unselectAll);
     QObject::connect(this->select_button, &QPushButton::released, this, &SelectTopicsWindow::saveSelected);
     layout->addWidget(this->select_button);
     this->setLayout(layout);
@@ -61,19 +73,29 @@ void SelectTopicsWindow::saveSelected()
     std::ofstream file;
     std::string topic_data_filename = output_path + "/files/selected_topic_data.txt";
     file.open(topic_data_filename, std::ios_base::trunc);
-    size_t index = 0;
     for (size_t i = 0; i < save_indices.size(); ++i)
     {
-        if ((int) i == save_indices.at(index))
-        {
-            index++;
-            //std::string line = data.topics_with_message_count.at(i).topic_metadata.name + "," + data.topics_with_message_count.at(i).topic_metadata.type + "\n";
-            std::string line = valid_topics.at(i) + "," + valid_msgs.at(i) + "\n";
-
-            file << line;
-        }
+        int index = save_indices.at(i);
+        std::string line = valid_topics.at(index) + "," + valid_msgs.at(index) + "\n";
+        file << line;       
     }
 
     file.close();
     this->close();
+}
+
+void SelectTopicsWindow::selectAll()
+{
+    for (int i = 0; i < list_widget->count(); ++i)
+    {
+        list_widget->item(i)->setCheckState(Qt::Checked);
+    }
+}
+
+void SelectTopicsWindow::unselectAll()
+{
+    for (int i = 0; i < list_widget->count(); ++i)
+    {
+        list_widget->item(i)->setCheckState(Qt::Unchecked);
+    }
 }
