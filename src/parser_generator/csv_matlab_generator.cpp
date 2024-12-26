@@ -1,6 +1,6 @@
-#include "bagfile_parser_qt/parser_generator/matlab_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/csv_matlab_generator.hpp"
 
-MatlabGenerator::MatlabGenerator(const std::string &output_file_path, const std::string &parser_path)
+CsvMatlabGenerator::CsvMatlabGenerator(const std::string &output_file_path, const std::string &parser_path)
 {
     this->output_file_path = output_file_path;
     this->parser_path = parser_path;
@@ -18,12 +18,12 @@ MatlabGenerator::MatlabGenerator(const std::string &output_file_path, const std:
     generateMatlabParser();
 }
 
-MatlabGenerator::~MatlabGenerator()
+CsvMatlabGenerator::~CsvMatlabGenerator()
 {
 
 }
 
-void MatlabGenerator::generateMatlabParser()
+void CsvMatlabGenerator::generateMatlabParser()
 {
     matlab_parser.open(output_file_path, std::ios_base::trunc);
 
@@ -116,7 +116,7 @@ void MatlabGenerator::generateMatlabParser()
     matlab_parser.close();
 }
 
-void MatlabGenerator::loadTopicData()
+void CsvMatlabGenerator::loadTopicData()
 {
     std::ifstream file;
     file.open(parser_path + "/files/parser_files/topic_data.txt");
@@ -144,7 +144,7 @@ void MatlabGenerator::loadTopicData()
     file.close();
 }
 
-MatlabGenerator::MessageData MatlabGenerator::loadFieldNames(const std::string &msg_data_filename)
+CsvMatlabGenerator::MessageData CsvMatlabGenerator::loadFieldNames(const std::string &msg_data_filename)
 {
     MessageData data;
 
@@ -180,7 +180,7 @@ MatlabGenerator::MessageData MatlabGenerator::loadFieldNames(const std::string &
     return data;
 }
 
-std::string MatlabGenerator::slashToUnderscore(std::string str)
+std::string CsvMatlabGenerator::slashToUnderscore(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -192,7 +192,7 @@ std::string MatlabGenerator::slashToUnderscore(std::string str)
     return str;
 }
 
-std::string MatlabGenerator::bangToUnderscore(std::string str)
+std::string CsvMatlabGenerator::bangToUnderscore(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -205,7 +205,7 @@ std::string MatlabGenerator::bangToUnderscore(std::string str)
     return str;
 }
 
-std::string MatlabGenerator::removeSpecialChars(std::string str)
+std::string CsvMatlabGenerator::removeSpecialChars(std::string str)
 {
     std::string output_string = "";
     for (size_t i = 0; i < str.length(); ++i)

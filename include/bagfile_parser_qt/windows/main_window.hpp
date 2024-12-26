@@ -19,8 +19,9 @@
 
 #include "bagfile_parser_qt/parser_generator/bag_analyzer.hpp"
 #include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
-#include "bagfile_parser_qt/parser_generator/parser_generator.hpp"
-#include "bagfile_parser_qt/parser_generator/matlab_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/csv_parser_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/csv_matlab_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/matlab_parser_generator.hpp"
 
 class MainWindow : public QWidget
 {
@@ -34,6 +35,9 @@ class MainWindow : public QWidget
     QGridLayout* main_layout;
     QVBoxLayout* workflow_layout;
     QVBoxLayout* bag_select_layout;
+    QHBoxLayout* parser_generator_layout;
+    QVBoxLayout* csv_parser_layout;
+    QVBoxLayout* matlab_parser_layout;
 
     QPushButton* bag_select_button;
     QLabel* bag_path_label;
@@ -43,10 +47,18 @@ class MainWindow : public QWidget
     QPushButton* select_topics_button;
     QPushButton* configure_depends_button;
     QPushButton* autoconfigure_generator_button;
+
     QPushButton* generate_parser_button;
-    QPushButton* build_parser_button;
+    QPushButton* build_csv_parser_button;
     QPushButton* run_csv_parser_button;
+    QPushButton* generate_csv_matlab_parser_button;
+
     QPushButton* generate_matlab_parser_button;
+    QPushButton* build_matlab_parser_button;
+    QPushButton* run_matlab_parser_button;
+
+    QPushButton* reset_workspace_button;
+
 
     std::string bagfile_path;
     std::string share_path;
@@ -67,7 +79,11 @@ class MainWindow : public QWidget
     void generateParser();
     void buildParser();
     void runCsvParser();
+    void generateCsvMatlabParser();
+
     void generateMatlabParser();
+    void buildMatlabParser();
+    void runMatlabParser();
 };
 
 #endif

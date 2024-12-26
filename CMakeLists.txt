@@ -80,8 +80,9 @@ set(WINDOW_SRCS
 set(PARSER_SRCS
   src/parser_generator/bag_analyzer.cpp
   src/parser_generator/message_analyzer.cpp
-  src/parser_generator/parser_generator.cpp
-  src/parser_generator/matlab_generator.cpp
+  src/parser_generator/csv_parser_generator.cpp
+  src/parser_generator/csv_matlab_generator.cpp
+  src/parser_generator/matlab_parser_generator.cpp
 )
 
 add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES} ${PARSER_SRCS})

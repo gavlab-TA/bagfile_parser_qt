@@ -1,5 +1,5 @@
-#ifndef MATLAB_GENERATOR_HPP
-#define MATLAB_GENERATOR_HPP
+#ifndef CSV_MATLAB_GENERATOR_HPP
+#define CSV_MATLAB_GENERATOR_HPP
 
 #include <string>
 #include <vector>
@@ -8,11 +8,11 @@
 #include <iostream>
 #include <sstream>
 
-class MatlabGenerator
+class CsvMatlabGenerator
 {
     public: 
-    MatlabGenerator(const std::string &output_file_path, const std::string &parser_path);
-    ~MatlabGenerator();
+    CsvMatlabGenerator(const std::string &output_file_path, const std::string &parser_path);
+    ~CsvMatlabGenerator();
 
     struct MessageData{
         std::vector<std::string> field_names;

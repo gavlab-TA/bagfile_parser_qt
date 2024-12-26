@@ -1,6 +1,6 @@
-#include "bagfile_parser_qt/parser_generator/parser_generator.hpp"
+#include "bagfile_parser_qt/parser_generator/csv_parser_generator.hpp"
 
-ParserGenerator::ParserGenerator(const std::string &output_path, const std::string &bag_filename)
+CsvParserGenerator::CsvParserGenerator(const std::string &output_path, const std::string &bag_filename)
 {
     this->output_path = output_path;
     this->output_package_path = output_path + "/src/rosbag2_parser/";
@@ -20,11 +20,11 @@ ParserGenerator::ParserGenerator(const std::string &output_path, const std::stri
     std::cout << "done" << std::endl;
 }
 
-ParserGenerator::~ParserGenerator()
+CsvParserGenerator::~CsvParserGenerator()
 {
 }
 
-void ParserGenerator::loadVectors()
+void CsvParserGenerator::loadVectors()
 {
     depends = readFile(output_path + "/files/depends.txt");
 
@@ -101,7 +101,7 @@ void ParserGenerator::loadVectors()
     }
 }
 
-void ParserGenerator::setupFiles()
+void CsvParserGenerator::setupFiles()
 {
     if (std::filesystem::exists(output_package_path))
     {
@@ -196,7 +196,7 @@ void ParserGenerator::setupFiles()
     }
 }
 
-void ParserGenerator::writeCMakeLists()
+void CsvParserGenerator::writeCMakeLists()
 {
     std::stringstream output;
     std::string package_name = "rosbag2_parser";
@@ -230,7 +230,7 @@ void ParserGenerator::writeCMakeLists()
     cmake_lists_file.close();
 }
 
-void ParserGenerator::writePackageXml()
+void CsvParserGenerator::writePackageXml()
 {
     std::string package_name = "rosbag2_parser";
     std::stringstream output;
@@ -257,7 +257,7 @@ void ParserGenerator::writePackageXml()
     package_xml_file.close();
 }
 
-void ParserGenerator::writeHeader()
+void CsvParserGenerator::writeHeader()
 {
     std::string package_name = "rosbag2_parser";
     std::string class_name = "Rosbag2Parser";
@@ -334,7 +334,7 @@ void ParserGenerator::writeHeader()
     header_file.close();
 }
 
-void ParserGenerator::writeSource()
+void CsvParserGenerator::writeSource()
 {
     std::string package_name = "rosbag2_parser";
     std::string class_name = "Rosbag2Parser";
@@ -558,7 +558,7 @@ void ParserGenerator::writeSource()
     source_file.close();
 }
 
-void ParserGenerator::writeConfig()
+void CsvParserGenerator::writeConfig()
 {
     // Get Path from Bagfile
     std::vector<std::string> split_string;
@@ -580,7 +580,7 @@ void ParserGenerator::writeConfig()
     config_file.close();
 }
 
-void ParserGenerator::writeLaunch()
+void CsvParserGenerator::writeLaunch()
 {
     std::stringstream output;
     std::string package_name = "rosbag2_parser";
@@ -611,7 +611,7 @@ void ParserGenerator::writeLaunch()
     launch_file.close();
 }
 
-void ParserGenerator::writeMain()
+void CsvParserGenerator::writeMain()
 {
     std::stringstream output;
     std::string package_name = "rosbag2_parser";
@@ -633,7 +633,7 @@ void ParserGenerator::writeMain()
 }
 
 
-std::vector<std::string> ParserGenerator::readFile(const std::string &filename)
+std::vector<std::string> CsvParserGenerator::readFile(const std::string &filename)
 {
     std::vector<std::string> output;
     if (std::filesystem::exists(filename))
@@ -656,7 +656,7 @@ std::vector<std::string> ParserGenerator::readFile(const std::string &filename)
     return output;
 }
 
-std::string ParserGenerator::slashToUnderscore(std::string str)
+std::string CsvParserGenerator::slashToUnderscore(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -668,7 +668,7 @@ std::string ParserGenerator::slashToUnderscore(std::string str)
     return str;
 }
 
-std::string ParserGenerator::slashToColon(std::string str)
+std::string CsvParserGenerator::slashToColon(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -681,7 +681,7 @@ std::string ParserGenerator::slashToColon(std::string str)
     return str;
 }
 
-std::string ParserGenerator::bangToUnderscore(std::string str)
+std::string CsvParserGenerator::bangToUnderscore(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -694,7 +694,7 @@ std::string ParserGenerator::bangToUnderscore(std::string str)
     return str;
 }
 
-std::string ParserGenerator::bangToDot(std::string str)
+std::string CsvParserGenerator::bangToDot(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -707,7 +707,7 @@ std::string ParserGenerator::bangToDot(std::string str)
     return str;
 }
 
-std::string ParserGenerator::snakeToCamel(std::string str)
+std::string CsvParserGenerator::snakeToCamel(std::string str)
 {
     for (size_t i = 0; i < str.length(); i++)
     {
@@ -721,7 +721,7 @@ std::string ParserGenerator::snakeToCamel(std::string str)
     return str;
 }
 
-std::string ParserGenerator::convertFieldTypes(std::string str)
+std::string CsvParserGenerator::convertFieldTypes(std::string str)
 {
     if (str == "string" || str == "string[]")
     {
@@ -738,7 +738,7 @@ std::string ParserGenerator::convertFieldTypes(std::string str)
     }
 }
 
-std::vector<std::string> ParserGenerator::split(std::string s, char delim)
+std::vector<std::string> CsvParserGenerator::split(std::string s, char delim)
 {
     std::vector<std::string> result;
     std::stringstream ss(s);
