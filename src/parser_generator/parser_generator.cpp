@@ -497,6 +497,8 @@ void ParserGenerator::writeSource()
                     split_string.at(0).erase(split_string.at(0).end() - 6, split_string.at(0).end());
                 }
 
+
+                /*    
                 if (types.at(j) == "string")
                 {
                     //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(std::to_string(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size()));\n";
@@ -507,6 +509,9 @@ void ParserGenerator::writeSource()
                     //output << "\t\t" + bangToUnderscore(field_names.at(j)) + ".push_back(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size());\n";
                     output << "\toutput_string += std::to_string(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size());\n";
                 }
+                */
+
+                output << "\toutput_string += std::to_string(" + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size());\n";
                 output << "\toutput_string += \",\";\n";
 
                 output << "\tfor (size_t j = 0; j < " + topic_sorting_data.at(i).msg_var + "." + split_string.at(0) + ".size(); j++)\n\t{\n";
