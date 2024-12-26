@@ -301,7 +301,15 @@ void MatlabParserGenerator::writeSource()
 
     // output << "\tstd::string bag_filename = this->get_parameter(\"path\").as_string() + this->get_parameter(\"bagfile\").as_string();\n\n";
     
+    boost::split(split_string, bag_filename, boost::is_any_of("/"));
+    temp = "";
+    for (size_t i = 0; i < split_string.size()-1; ++i)
+    {
+        temp += split_string.at(i) + "/";
+    }
+
     output << "\tstd::string bag_filename = \"" + bag_filename + "\";\n";
+    output << "\tthis->path = \"" + temp + "\";\n";
 
     output << "\tthis->reader = new rosbag2_cpp::readers::SequentialReader();\n";
     output << "\tthis->storage_options.uri = bag_filename;\n";

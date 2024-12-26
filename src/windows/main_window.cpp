@@ -257,8 +257,18 @@ void MainWindow::generateCsvMatlabParser()
 void MainWindow::generateMatlabParser()
 {
     MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path);
-    std::string command = "rm " + output_path + "/src/TinyMAT && ln -s " + output_path + "/../external/TinyMAT " + output_path + "/src/";
-    std::cout << command << std::endl;
+    std::string command;
+    if (std::filesystem::exists(output_path + "/src/TinyMAT"))
+    {
+        command = "rm " + output_path + "/src/TinyMAT";
+        if (system(command.c_str()))
+        {
+            std::cout << "Issue removing old symlinks" << std::endl;
+        }
+    }
+
+    command = "ln -s " + output_path + "/../external/TinyMAT " + output_path + "/src/";
+
     if (system(command.c_str()))
     {
         std::cout << "Issue Creating symlink for TinyMAT" << std::endl;

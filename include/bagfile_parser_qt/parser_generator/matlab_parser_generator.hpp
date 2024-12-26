@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <boost/algorithm/string.hpp>
 
 class MatlabParserGenerator
 {
