@@ -13,16 +13,22 @@ RemovePackagesWindow::RemovePackagesWindow(const int &width, const int &height, 
 
 RemovePackagesWindow::~RemovePackagesWindow()
 {
+
 }
 
 void RemovePackagesWindow::initialize()
 {
-    QVBoxLayout *layout = new QVBoxLayout();
+    // Init Layout
+    layout = new QVBoxLayout();
 
+    // Init list widget
     list_widget = new QListWidget();
+    
+    // Open package log file
     std::ifstream file;
     file.open(package_log_filename);
 
+    // Read file - store data in checkable list
     QStringList items;
     std::string line;
     std::vector<std::string> line_data;
@@ -45,13 +51,13 @@ void RemovePackagesWindow::initialize()
         list_widget->addItem(item);
     }
 
-    layout->addWidget(list_widget);
-
+    // Setup Button and callback
     remove_button = new QPushButton();
     remove_button->setText("Remove Selected Packages");
-
     QObject::connect(remove_button, &QPushButton::released, this, &RemovePackagesWindow::removeSelected);
 
+    // Load layout
+    layout->addWidget(list_widget);
     layout->addWidget(remove_button);
 
     this->setLayout(layout);
@@ -59,6 +65,7 @@ void RemovePackagesWindow::initialize()
 
 void RemovePackagesWindow::removeSelected()
 {
+    // Check for and store checked items
     std::vector<int> remove_indices;
     for (int i = 0; i < list_widget->count(); ++i)
     {
@@ -68,6 +75,7 @@ void RemovePackagesWindow::removeSelected()
         }
     }
 
+    // Get current stored data
     std::ifstream file;
     file.open(this->package_log_filename);
     std::vector<std::pair<std::string, std::string>> package_data;
@@ -88,6 +96,7 @@ void RemovePackagesWindow::removeSelected()
     }
     file.close();
 
+    // Remove checked items and rewrite file
     int rm_index = 0;
     std::ofstream out_file;
     out_file.open(this->package_log_filename, std::ios_base::trunc);

@@ -14,6 +14,8 @@ class RemoveDependsWindow : public QDialog
     ~RemoveDependsWindow();
 
     private:
+    // Widgets
+    QVBoxLayout *layout;
     QListWidget *list_widget;
     QPushButton *remove_button;
 

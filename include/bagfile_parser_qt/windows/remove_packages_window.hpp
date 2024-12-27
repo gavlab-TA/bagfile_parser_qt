@@ -23,6 +23,8 @@ class RemovePackagesWindow : public QDialog
     ~RemovePackagesWindow();
 
     private:
+    // Widgets
+    QVBoxLayout *layout;
     QListWidget *list_widget;
     QPushButton *remove_button;
 

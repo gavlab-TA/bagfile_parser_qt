@@ -12,34 +12,43 @@ DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &he
     this->getData();
     this->getBagPackages();
 
+    // Init Buttons
     this->show_depends_button = new QPushButton();
-    this->show_depends_button->setText("Show Tracked Dependencies");
     this->reset_depends_button = new QPushButton();
-    this->reset_depends_button->setText("Reset Tracked Dependencies");
     this->add_depends_button = new QPushButton();
-    this->add_depends_button->setText("Add Dependency");
     this->remove_depends_button = new QPushButton();
+
+    // Set Button Text
+    this->show_depends_button->setText("Show Tracked Dependencies");
+    this->reset_depends_button->setText("Reset Tracked Dependencies");
+    this->add_depends_button->setText("Add Dependency");
     this->remove_depends_button->setText("Remove Depends");
 
+    // Init Layouts
     this->depends_edit = new QLineEdit();
     this->add_depends_layout = new QHBoxLayout();
+
+    // Pack add depends layout
     this->add_depends_layout->addWidget(this->depends_edit);
     this->add_depends_layout->addWidget(this->add_depends_button);
 
+    // Pack Main Layout
     this->main_layout->addWidget(this->show_depends_button);
     this->main_layout->addLayout(this->add_depends_layout);
     this->main_layout->addWidget(this->remove_depends_button);
     this->main_layout->addWidget(this->reset_depends_button);
 
+    // Set Callbacks
     QObject::connect(this->show_depends_button, &QPushButton::released, this, &DependencyManagerWindow::openShowDependsWindow);
     QObject::connect(this->add_depends_button, &QPushButton::released, this, &DependencyManagerWindow::addDependency);
     QObject::connect(this->reset_depends_button, &QPushButton::released, this, &DependencyManagerWindow::resetDependencies);
     QObject::connect(this->remove_depends_button, &QPushButton::released, this, &DependencyManagerWindow::openRemoveDependsWindow);
 
+    // Launch the recommended dependency window on startup
     RecommendedDependsWindow recommended_depends_window(bag_packages, output_path);
     recommended_depends_window.exec();
 
-    this->setLayout(main_layout);
+    this->setLayout(this->main_layout);
 
     cleanupDependsFile();
 }
@@ -50,6 +59,7 @@ DependencyManagerWindow::~DependencyManagerWindow()
 
 void DependencyManagerWindow::getData()
 {
+    // Read the selected topic list file
     data.clear();
     std::ifstream file;
     std::string filename = output_path + "/files/selected_topic_data.txt";
@@ -78,6 +88,7 @@ void DependencyManagerWindow::getData()
 
 void DependencyManagerWindow::getBagPackages()
 {
+    // Create a vector of packages in the bag data while rejecting repeat package names
     for (size_t i = 0; i < data.size(); ++i)
     {
         std::vector<std::string> split_string;
@@ -97,6 +108,7 @@ void DependencyManagerWindow::getBagPackages()
 
 bool DependencyManagerWindow::vectorContains(const std::vector<std::string> &vec, const std::string &val)
 {
+    // Check if a vector contains a value
     for (size_t i = 0; i < vec.size(); ++i)
     {
         if (vec.at(i) == val)
@@ -109,6 +121,7 @@ bool DependencyManagerWindow::vectorContains(const std::vector<std::string> &vec
 
 void DependencyManagerWindow::cleanupDependsFile()
 {
+    // Rewrite depends.txt to have to repeat lines
     std::string filename = output_path + "/files/depends.txt";
 
     if (std::filesystem::exists(filename))
@@ -157,6 +170,7 @@ void DependencyManagerWindow::cleanupDependsFile()
 
 void DependencyManagerWindow::openShowDependsWindow()
 {
+    // Package dependenies in a string vector for display
     cleanupDependsFile();
     packages.clear();
 
@@ -181,6 +195,7 @@ void DependencyManagerWindow::openShowDependsWindow()
 
 void DependencyManagerWindow::addDependency()
 {
+    // Get data from line edit and add to the tracked package dependencies
     std::ofstream file;
     std::string filename = output_path + "/files/depends.txt";
 
@@ -198,6 +213,7 @@ void DependencyManagerWindow::addDependency()
 
 void DependencyManagerWindow::resetDependencies()
 {
+    // Reset all dependency configuration
     if (confirmDialog())
     {
         std::ofstream file;
@@ -213,6 +229,7 @@ void DependencyManagerWindow::resetDependencies()
 
 bool DependencyManagerWindow::confirmDialog()
 {
+    // Check for user confirmation
     QMessageBox msg_box;
     msg_box.setIcon(QMessageBox::Question);
     msg_box.setWindowTitle("Warning");

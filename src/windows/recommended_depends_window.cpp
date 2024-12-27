@@ -10,11 +10,13 @@ RecommendedDependsWindow::RecommendedDependsWindow(const std::vector<std::string
     this->list_widget = new QListWidget();
     QStringList items;
 
+    // Get list of recommended depends
     for (size_t i = 0; i < recommended_depends.size(); ++i)
     {
         items.push_back(QString(recommended_depends.at(i).c_str()));
     }
 
+    // Load Recommended depends into list widget
     for (const QString &item_text : items)
     {
         QListWidgetItem *item = new QListWidgetItem(item_text);
@@ -24,11 +26,16 @@ RecommendedDependsWindow::RecommendedDependsWindow(const std::vector<std::string
     }
 
     layout->addWidget(list_widget);
+
+    // Setup Button
     this->approve_button = new QPushButton();
     this->approve_button->setText("Approved Recommendations");
     
+    // Set Callback
     QObject::connect(this->approve_button, &QPushButton::released, this, &RecommendedDependsWindow::approveDependencies);
-    layout->addWidget(approve_button);
+    
+    // Set Layout
+    layout->addWidget(this->approve_button);
     this->setLayout(layout);
 }
 
@@ -39,6 +46,7 @@ RecommendedDependsWindow::~RecommendedDependsWindow()
 
 void RecommendedDependsWindow::approveDependencies()
 {
+    // Write checked items to the depends file - appended
     std::vector<std::string> depends;
 
     std::ofstream file;

@@ -25,12 +25,17 @@ class DependencyManagerWindow : public QWidget
     ~DependencyManagerWindow();
 
     private:
+    // Layouts
     QVBoxLayout* main_layout;
+    QHBoxLayout* add_depends_layout;
+
+    // Buttons
     QPushButton* show_depends_button;
     QPushButton* add_depends_button;
     QPushButton* remove_depends_button;
     QPushButton* reset_depends_button;
-    QHBoxLayout* add_depends_layout;
+    
+    // Line Edit
     QLineEdit* depends_edit;
 
     std::vector<std::string> packages;

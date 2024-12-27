@@ -20,7 +20,9 @@ class StringDisplayWindow : public QDialog
     ~StringDisplayWindow();
 
     private:
+    QVBoxLayout *layout;
     QPushButton *done_button;
+    QListWidget *list_widget;
     
     void initialize(const std::vector<std::string> &strings, const std::string &title);
 

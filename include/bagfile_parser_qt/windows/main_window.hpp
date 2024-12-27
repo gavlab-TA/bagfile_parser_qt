@@ -32,42 +32,45 @@ class MainWindow : public QWidget
     ~MainWindow();
 
     private:
+    // Layouts
     QGridLayout* main_layout;
     QVBoxLayout* workflow_layout;
-    QVBoxLayout* bag_select_layout;
+    QGridLayout* bag_select_layout;
     QGridLayout* parser_generator_layout;
 
-    QPushButton* bag_select_button;
+    //Labels
     QLabel* bag_path_label;
     QLabel* status_label;
+    QLabel* csv_parser_label;
+    QLabel* matlab_parser_label;
     
+    //Buttons
+    QPushButton* bag_select_button;   
     QPushButton* configure_parser_button;
     QPushButton* select_topics_button;
     QPushButton* configure_depends_button;
     QPushButton* autoconfigure_generator_button;
-
     QPushButton* generate_parser_button;
     QPushButton* build_csv_parser_button;
     QPushButton* run_csv_parser_button;
     QPushButton* generate_csv_matlab_parser_button;
-
     QPushButton* generate_matlab_parser_button;
     QPushButton* build_matlab_parser_button;
     QPushButton* run_matlab_parser_button;
-
     QPushButton* reset_workspace_button;
-    QLabel* csv_parser_label;
-    QLabel* matlab_parser_label;
-
-
+    
+    // File Paths
     std::string bagfile_path;
     std::string share_path;
     std::string output_path;
 
+    // Rosbag Data
     rosbag2_storage::BagMetadata data;
 
+    // Has Bag been selected flag
     bool bag_selected;
 
+    // Setup local files
     void setupFileLocations();
 
     private slots:

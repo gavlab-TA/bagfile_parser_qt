@@ -24,14 +24,21 @@ class SelectTopicsWindow : public QDialog
     ~SelectTopicsWindow();
 
     private: 
-    QListWidget *list_widget;
-    QPushButton *select_button;
-
+    //Layout
+    QVBoxLayout *layout;
     QHBoxLayout *selection_layout;
+
+    // Buttons
+    QPushButton *select_button;
     QPushButton *select_all_button;
     QPushButton *unselect_all_button;
 
+    // List
+    QListWidget *list_widget;
+
+    // Data
     rosbag2_storage::BagMetadata data;
+    
     std::string output_path;
     std::vector<std::string> valid_topics;
     std::vector<std::string> valid_msgs;

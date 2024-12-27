@@ -16,13 +16,17 @@ RemoveDependsWindow::~RemoveDependsWindow()
 
 void RemoveDependsWindow::initialize()
 {
-    QVBoxLayout *layout = new QVBoxLayout();
+    // Layout
+    layout = new QVBoxLayout();
 
+    // Initialize list widget
     list_widget = new QListWidget();
+    
+    // Open Depends file
     std::ifstream file;
     file.open(depends_filename);
 
-
+    // Read Depends file and store data in the list widget
     while (!file.eof())
     {
         std::string line;
@@ -37,17 +41,20 @@ void RemoveDependsWindow::initialize()
         }
     }
 
-    layout->addWidget(list_widget);
+    // Setup Button and Callback
     remove_button = new QPushButton();
     remove_button->setText("Remove Selected Depends");
     QObject::connect(remove_button, &QPushButton::released, this, &RemoveDependsWindow::removeSelected);
 
+    // Load layout
+    layout->addWidget(list_widget);
     layout->addWidget(remove_button);
     this->setLayout(layout);
 }
 
 void RemoveDependsWindow::removeSelected()
 {
+    // Rewrite depends file - only save items that are not checked
     std::ofstream file;
     file.open(depends_filename, std::ios_base::trunc);
 

@@ -6,45 +6,56 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
     this->output_path = output_path;
     this->setWindowTitle("Parser External Dependencies");
 
+    // Init Layouts
     this->main_layout = new QGridLayout();
     this->button_layout = new QHBoxLayout();
 
+    // Init Labels
     this->package_list_label = new QLabel();
     this->status_label = new QLabel();
     this->package_path_label = new QLabel();
     this->package_list_title_label = new QLabel();
     this->package_path_title_label = new QLabel();
 
+    // Set Label Text and Font
     this->package_list_title_label->setText("Package Names");
     this->package_list_title_label->setFont(QFont("Sans Serif", 14));
     this->package_path_title_label->setText("Package Paths");
     this->package_path_title_label->setFont(QFont("Sans Serif", 14));
 
+    // Init Buttons
     this->add_package_button = new QPushButton();
-    this->add_package_button->setText("Add Msg Pkg");
     this->remove_package_button = new QPushButton();
-    this->remove_package_button->setText("Remove Msg Pkg");
     this->build_workspace_button = new QPushButton();
-    this->build_workspace_button->setText("Build Msgs");
     this->clear_packages_button = new QPushButton();
+
+    // Set Button Text
+    this->add_package_button->setText("Add Msg Pkg");
+    this->remove_package_button->setText("Remove Msg Pkg");
+    this->build_workspace_button->setText("Build Msgs");
     this->clear_packages_button->setText("Reset Workspace");
 
+    // Set Button Callbacks
     QObject::connect(this->add_package_button, &QPushButton::released, this, &ConfigureWindow::openAddPackageWindow);
     QObject::connect(this->remove_package_button, &QPushButton::released, this, &ConfigureWindow::openRemoveWindow);
     QObject::connect(this->build_workspace_button, &QPushButton::released, this, &ConfigureWindow::buildWorkspace);
     QObject::connect(this->clear_packages_button, &QPushButton::released, this, &ConfigureWindow::clearPackages);
 
+    // Pack Button Layout
+    this->button_layout->addWidget(this->add_package_button, Qt::AlignCenter);
+    this->button_layout->addWidget(this->remove_package_button, Qt::AlignCenter);
+    this->button_layout->addWidget(this->build_workspace_button, Qt::AlignCenter);
+    
+    // Pack Main Layout
     this->main_layout->addWidget(this->package_list_title_label, 0, 0, 1, 1, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_path_title_label, 0, 2, 1, 3, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_list_label, 1, 0, 1, 1, Qt::AlignCenter);
     this->main_layout->addWidget(this->package_path_label, 1, 2, 1, 3, Qt::AlignCenter);
-    this->button_layout->addWidget(this->add_package_button, Qt::AlignCenter);
-    this->button_layout->addWidget(this->remove_package_button, Qt::AlignCenter);
-    this->button_layout->addWidget(this->build_workspace_button, Qt::AlignCenter);
     this->main_layout->addLayout(this->button_layout, 2, 0, 1, 5, Qt::AlignCenter);
-    this->main_layout->addWidget(this->status_label, 3, 2, Qt::AlignCenter);
+    this->main_layout->addWidget(this->status_label, 3, 0, 1, 5, Qt::AlignCenter);
     this->main_layout->addWidget(this->clear_packages_button, 4, 0, Qt::AlignCenter);
 
+    // Set Main Layout
     this->main_layout->setContentsMargins(20, 20, 20, 20);
     this->setLayout(main_layout);
 
@@ -55,19 +66,12 @@ ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std:
 
 ConfigureWindow::~ConfigureWindow()
 {
-    delete main_layout;
-    delete add_package_button;
-    delete remove_package_button;
-    delete build_workspace_button;
-    delete clear_packages_button;
-    delete status_label;
-    delete package_list_label;
-    delete package_list_title_label;
-    delete package_path_label;
+
 }
 
 void ConfigureWindow::openAddPackageWindow()
 {
+    // Get Path of external package
     QWidget w;
     QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
@@ -76,12 +80,14 @@ void ConfigureWindow::openAddPackageWindow()
     boost::split(split_string, full_path, boost::is_any_of("/"));
     std::pair<std::string, std::string> package_data;
 
+    // Create pair - <package_name, full_path>
     package_data.first = split_string.at(split_string.size() - 1);
     package_data.second = full_path;
     packages.push_back(package_data);
 
     std::string command;
 
+    // Create the workspace src if it does not exist
     if (!std::filesystem::exists(output_path + "/src/"))
     {
         command = "mkdir -p " + output_path + "/src";
@@ -91,6 +97,7 @@ void ConfigureWindow::openAddPackageWindow()
         }
     }
 
+    // Symlink the external package to the workspace src
     if (package_data.second != "")
     {
         command = "ln -s " + package_data.second + " " + output_path + "/src/";
@@ -135,6 +142,7 @@ void ConfigureWindow::runBuild()
     std::string command;
     command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
 
+    // This may always return good even on a fail
     int res = system(command.c_str());
     if (res)
     {
@@ -198,6 +206,7 @@ void ConfigureWindow::clearPackages()
 
 void ConfigureWindow::getWorkspaceLog()
 {
+    // Read workspace manifest log file for display
     packages.clear();
     if (std::filesystem::exists(log_filename))
     {
@@ -243,6 +252,7 @@ void ConfigureWindow::getWorkspaceLog()
 
 bool ConfigureWindow::confirmDialog()
 {
+    // Prompt user for confirmation before clearing the dependencies
     QMessageBox msg_box;
     msg_box.setIcon(QMessageBox::Question);
     msg_box.setWindowTitle("Warning");

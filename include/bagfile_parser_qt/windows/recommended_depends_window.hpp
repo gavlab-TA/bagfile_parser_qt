@@ -20,6 +20,7 @@ class RecommendedDependsWindow : public QDialog
     ~RecommendedDependsWindow();
 
     private:
+    // Widgets
     QListWidget *list_widget;
     QPushButton *approve_button;
 
