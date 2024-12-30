@@ -7,6 +7,7 @@ SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, cons
     this->setWindowModality(Qt::ApplicationModal);
     this->data = data;
     this->output_path = output_path;
+    this->topic_data.clear();
 
     // Init Layout
     this->layout = new QVBoxLayout();
@@ -15,16 +16,26 @@ SelectTopicsWindow::SelectTopicsWindow(const int &width, const int &height, cons
     // Init List
     this->list_widget = new QListWidget();
 
-    // Load List
-    for (size_t i = 0; i < this->data.topics_with_message_count.size(); i++)
+    // Alphabetize Topic Data by Topic Name
+    for (size_t i = 0; i < this->data.topics_with_message_count.size(); ++i)
     {
         if (this->data.topics_with_message_count.at(i).message_count > 0)
         {
-            items.push_back(QString(this->data.topics_with_message_count.at(i).topic_metadata.name.c_str()));
-            valid_topics.push_back(this->data.topics_with_message_count.at(i).topic_metadata.name);
-            valid_msgs.push_back(this->data.topics_with_message_count.at(i).topic_metadata.type);
+            TopicData buffer;
+            buffer.topic_name = this->data.topics_with_message_count.at(i).topic_metadata.name;
+            buffer.message_type = this->data.topics_with_message_count.at(i).topic_metadata.type;
+            this->topic_data.push_back(buffer);
         }
-    }    
+    }
+    std::sort(this->topic_data.begin(), this->topic_data.end(), compareTopicName);
+
+    // Load List
+    for (TopicData d : this->topic_data)
+    {
+        items.push_back(QString(d.topic_name.c_str()));
+        valid_topics.push_back(d.topic_name);
+        valid_msgs.push_back(d.message_type);
+    }   
 
     for (const QString &item_text : items)
     {

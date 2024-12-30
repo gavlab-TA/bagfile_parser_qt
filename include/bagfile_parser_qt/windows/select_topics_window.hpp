@@ -19,12 +19,23 @@ class SelectTopicsWindow : public QDialog
 {
     Q_OBJECT
 
-    public:
+public:
     SelectTopicsWindow(const int &width, const int &height, const rosbag2_storage::BagMetadata &data, const std::string &output_path, QWidget *parent);
     ~SelectTopicsWindow();
 
-    private: 
-    //Layout
+    struct TopicData
+    {
+        std::string topic_name;
+        std::string message_type;
+    };
+
+    static bool compareTopicName(const SelectTopicsWindow::TopicData &a, const SelectTopicsWindow::TopicData &b)
+    {
+        return a.topic_name < b.topic_name;
+    }
+
+private:
+    // Layout
     QVBoxLayout *layout;
     QHBoxLayout *selection_layout;
 
@@ -38,14 +49,15 @@ class SelectTopicsWindow : public QDialog
 
     // Data
     rosbag2_storage::BagMetadata data;
-    
+    std::vector<TopicData> topic_data;
+
     std::string output_path;
     std::vector<std::string> valid_topics;
     std::vector<std::string> valid_msgs;
 
     QStringList items;
 
-    private slots:
+private slots:
     void saveSelected();
     void selectAll();
     void unselectAll();
