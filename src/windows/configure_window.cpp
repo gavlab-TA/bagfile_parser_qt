@@ -1,10 +1,12 @@
 #include "bagfile_parser_qt/windows/configure_window.hpp"
 
-ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std::string &output_path) : QWidget()
+ConfigureWindow::ConfigureWindow(const int &width, const int &height, const std::string &output_path, QWidget* parent) : QDialog(parent)
 {
     this->resize(width, height);
     this->output_path = output_path;
     this->setWindowTitle("Parser External Dependencies");
+
+    this->setWindowModality(Qt::ApplicationModal);
 
     // Init Layouts
     this->main_layout = new QGridLayout();
@@ -139,20 +141,22 @@ void ConfigureWindow::buildWorkspace()
 
 void ConfigureWindow::runBuild()
 {
-    std::string command;
-    command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+    TaskWindow* task_window = new TaskWindow("Building Dependency Packages... Please Wait...");
+    BuildMessagesWorker* worker = new BuildMessagesWorker(output_path);
+    QThread* thread = new QThread();
+    worker->moveToThread(thread);
 
-    // This may always return good even on a fail
-    int res = system(command.c_str());
-    if (res)
-    {
-        std::cout << "Error in building" << std::endl;
-        status_label->setText("Failed");
-    }
-    else
-    {
-        status_label->setText("Message Packages Built Successfully");
-    }
+    QObject::connect(thread, &QThread::started, worker, &BuildMessagesWorker::runBuildMessagesThread);
+    QObject::connect(worker, &BuildMessagesWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &BuildMessagesWorker::workFinished, worker, &BuildMessagesWorker::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    QObject::connect(thread, &QThread::finished, task_window, &TaskWindow::closeWindow);
+
+    QObject::connect(worker, &BuildMessagesWorker::success, this, &ConfigureWindow::displayBuildSuccess);
+    QObject::connect(worker, &BuildMessagesWorker::failed, this, &ConfigureWindow::displayBuildFailed);
+
+    thread->start();
+    task_window->exec();
 }
 
 void ConfigureWindow::clearPackages()
@@ -269,4 +273,34 @@ bool ConfigureWindow::confirmDialog()
     {
         return false;
     }
+}
+
+void ConfigureWindow::displayBuildSuccess()
+{
+    status_label->setText("Message Packages Built Successfully");
+}
+
+void ConfigureWindow::displayBuildFailed()
+{
+    status_label->setText("Failed");
+}
+
+void BuildMessagesWorker::runBuildMessagesThread()
+{
+    std::string command;
+    command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+
+    // This may always return good even on a fail
+    int res = system(command.c_str());
+    if (res)
+    {
+        emit failed();
+        std::cout << "Error in building" << std::endl;
+    }
+    else
+    {
+        emit success();
+    }
+
+    emit workFinished();
 }

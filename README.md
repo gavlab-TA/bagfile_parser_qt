@@ -1,4 +1,17 @@
 # Bagfile Parser
+## Initial Setup
+There is a script in this package that can be used to install the package dependencies. This script can be run using the folling command inside the root of this package.
+```
+./install_depends.sh
+```
+If you are less familiar with ROS and linux you can run these following commands to do the full setup of this package. These commands need to be run inside the src/ directory of a ROS2 workspace.
+```
+git clone https://gitlab.com/kat0028/bagfile_parser_qt.git
+cd bagfile_parser_qt
+./install_depends.sh
+```
+
+## Running the Package
 This package creates and run parsers for ros2 bagfiles. Currently only SQLite3 bags can be run in the parser, but this will be updated in the near future. 
 
 This package compiles as part of a ROS workspace and can be run using 

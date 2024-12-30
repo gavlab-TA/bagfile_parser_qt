@@ -16,14 +16,18 @@
 #include <QCoreApplication>
 #include <QMessageBox>
 
-#include "bagfile_parser_qt/windows/remove_packages_window.hpp"
+#include <QThread>
+#include <QCoreApplication>
 
-class ConfigureWindow : public QWidget
+#include "bagfile_parser_qt/windows/remove_packages_window.hpp"
+#include "bagfile_parser_qt/windows/task_window.hpp"
+
+class ConfigureWindow : public QDialog
 {
     Q_OBJECT
 
     public:
-    ConfigureWindow(const int &width, const int &height, const std::string &output_path);
+    ConfigureWindow(const int &width, const int &height, const std::string &output_path, QWidget* parent = nullptr);
     ~ConfigureWindow();
 
     private:
@@ -60,6 +64,30 @@ class ConfigureWindow : public QWidget
     void clearPackages();
     void openAddPackageWindow();
     void buildWorkspace();
+    void displayBuildSuccess();
+    void displayBuildFailed();
+};
+
+class BuildMessagesWorker : public QObject
+{
+    Q_OBJECT
+
+    public: 
+    explicit BuildMessagesWorker(const std::string output_path, QObject* parent = nullptr) : QObject(parent)
+    {
+        this->output_path = output_path;
+    }
+
+    private:
+    std::string output_path;
+
+    public slots:
+    void runBuildMessagesThread();
+
+    signals: 
+    void workFinished();
+    void success();
+    void failed();
 };
 
 #endif

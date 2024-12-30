@@ -6,6 +6,9 @@
 #include <QPushButton>
 #include <QLayout>
 #include <QFileDialog>
+#include <QThread>
+#include <QMutex>
+#include <QCoreApplication>
 
 #include "rclcpp/rclcpp.hpp"
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
@@ -16,6 +19,7 @@
 #include "bagfile_parser_qt/windows/configure_window.hpp"
 #include "bagfile_parser_qt/windows/select_topics_window.hpp"
 #include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
+#include "bagfile_parser_qt/windows/task_window.hpp"
 
 #include "bagfile_parser_qt/parser_generator/bag_analyzer.hpp"
 #include "bagfile_parser_qt/parser_generator/message_analyzer.hpp"
@@ -59,6 +63,9 @@ class MainWindow : public QWidget
     QPushButton* run_matlab_parser_button;
     QPushButton* reset_workspace_button;
     
+    // Thread Vars
+    QMutex* mutex;
+
     // File Paths
     std::string bagfile_path;
     std::string share_path;
@@ -88,6 +95,51 @@ class MainWindow : public QWidget
     void buildMatlabParser();
     void runMatlabParser();
     void resetParser();
+    void resetStatusLabel();
+};
+
+class AnalyzeMessagesWorker : public QObject
+{
+    Q_OBJECT
+
+    public:
+    explicit AnalyzeMessagesWorker(QMutex *mutex, const std::string &output_path, QObject *parent = nullptr) : QObject(parent) 
+    {
+        this->mutex = mutex;
+        this->output_path = output_path;
+    }
+
+    private:
+    QMutex* mutex;
+    std::string output_path;
+
+    public slots:
+    void runAnalyzeMessagesThread();
+
+    signals:
+    void workFinished();
+};
+
+class RunMatlabParserWorker : public QObject
+{
+    Q_OBJECT
+
+    public:
+    explicit RunMatlabParserWorker(QMutex *mutex, const std::string &output_path, QObject* parent=nullptr) : QObject(parent)
+    {
+        this->mutex = mutex;
+        this->output_path = output_path;
+    }
+
+    private:
+    QMutex* mutex;
+    std::string output_path;
+
+    public slots:
+    void runMatlabParserThread();
+
+    signals:
+    void workFinished();
 };
 
 #endif

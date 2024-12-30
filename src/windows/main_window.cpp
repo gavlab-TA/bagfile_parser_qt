@@ -119,6 +119,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     // Setup Local Files 
     this->setupFileLocations();
+    this->mutex = new QMutex();
 }
 
 MainWindow::~MainWindow()
@@ -167,6 +168,8 @@ void MainWindow::setupFileLocations()
 
 void MainWindow::openBagSelectWindow()
 {
+    mutex->lock();
+
     // Select Bagfile Directory
     QWidget w;
     QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
@@ -201,45 +204,77 @@ void MainWindow::openBagSelectWindow()
     {
         bag_path_label->setText("NO BAG FOUND");
     }
+
+    mutex->unlock();
 }
 
 void MainWindow::openConfigureParserWindow()
 {
+    mutex->lock();
+
     ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path);
-    configure_window->show();
+    configure_window->exec();
+
+    mutex->unlock();
 }
 
 void MainWindow::openSelectTopicsWindow()
 {
+    mutex->lock();
+    
     SelectTopicsWindow topics_window(500, 500, data, output_path, this);
     topics_window.exec();
+
+    mutex->unlock();
 }
 
 void MainWindow::openConfigureDependsWindow()
 {
+    mutex->lock();
+
     DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path);
     dependency_window->show();
+
+    mutex->unlock();
 }
 
 void MainWindow::autoconfigureGenerator()
 {
+    mutex->lock();
     status_label->setText("Pulling Message Data");
     QApplication::processEvents();
-    BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
-    MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
-    status_label->setText("Ready");
+
+    AnalyzeMessagesWorker* worker = new AnalyzeMessagesWorker(mutex, output_path);
+    QThread* thread = new QThread();
+    worker->moveToThread(thread);
+
+    QObject::connect(thread, &QThread::started, worker, &AnalyzeMessagesWorker::runAnalyzeMessagesThread);
+    QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, this, &MainWindow::resetStatusLabel);
+    QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, worker, &AnalyzeMessagesWorker::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+
+    mutex->unlock();
+
+    thread->start();
 }
 
 void MainWindow::generateParser()
 {
+    mutex->lock();
+
     status_label->setText("Generating Parser");
     QApplication::processEvents();
     CsvParserGenerator csv_parser_generator(output_path, bagfile_path);
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::buildParser()
 {
+    mutex->lock();
+
     status_label->setText("Building Parser");
     QApplication::processEvents();
     std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
@@ -248,10 +283,14 @@ void MainWindow::buildParser()
         std::cout << "Issue Compiling Parser" << std::endl;
     }
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::runCsvParser()
 {
+    mutex->lock();
+
     status_label->setText("Running CSV Parser");
     QApplication::processEvents();
     std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 launch rosbag2_parser rosbag2_parser.launch.py'";
@@ -260,18 +299,26 @@ void MainWindow::runCsvParser()
         std::cout << "Issue running parser" << std::endl;
     }
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::generateCsvMatlabParser()
 {
+    mutex->lock();
+
     status_label->setText("Generating Parser");
     QApplication::processEvents();
     CsvMatlabGenerator csv_matlab_generator(bagfile_path, output_path);
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::generateMatlabParser()
 {
+    mutex->lock();
+
     status_label->setText("Generating Parser");
     QApplication::processEvents();
     MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path);
@@ -294,10 +341,14 @@ void MainWindow::generateMatlabParser()
         std::cout << "Issue Creating symlink for TinyMAT" << std::endl;
     }
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::buildMatlabParser()
 {
+    mutex->lock();
+
     status_label->setText("Building Parser");
     QApplication::processEvents();
     std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
@@ -306,22 +357,38 @@ void MainWindow::buildMatlabParser()
         std::cout << "Issue Compiling Parser" << std::endl;
     }
     status_label->setText("Ready");
+
+    mutex->unlock();
 }
 
 void MainWindow::runMatlabParser()
 {
+    mutex->lock();
     status_label->setText("Running Matlab Parser");
     QApplication::processEvents();
-    std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 run matlab_parser matlab_parser'";
-    if (system(command.c_str()))
-    {
-        std::cout << "Issue running parser" << std::endl;
-    }
-    status_label->setText("Ready");
+
+    RunMatlabParserWorker* worker = new RunMatlabParserWorker(mutex, output_path);
+    QThread* thread = new QThread();
+    worker->moveToThread(thread);
+
+    TaskWindow* task_window = new TaskWindow("MATLAB Parser Running... Please Wait...");
+
+    QObject::connect(thread, &QThread::started, worker, &RunMatlabParserWorker::runMatlabParserThread);
+    QObject::connect(worker, &RunMatlabParserWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &RunMatlabParserWorker::workFinished, worker, &RunMatlabParserWorker::deleteLater);
+    QObject::connect(worker, &RunMatlabParserWorker::workFinished, this, &MainWindow::resetStatusLabel);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);   
+    QObject::connect(thread, &QThread::finished, task_window, &TaskWindow::closeWindow);
+    mutex->unlock();
+
+    thread->start();
+    task_window->exec();
 }
 
 void MainWindow::resetParser()
 {
+    mutex->lock();
+
     // Run Confirmation Diaglog
     QMessageBox msg_box;
     msg_box.setIcon(QMessageBox::Question);
@@ -344,4 +411,41 @@ void MainWindow::resetParser()
         QApplication::quit();
         QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
     }
+
+    mutex->unlock();
+}
+
+void MainWindow::resetStatusLabel()
+{
+    this->mutex->lock();
+
+    this->status_label->setText("Ready");
+
+    this->mutex->unlock();
+}
+
+void AnalyzeMessagesWorker::runAnalyzeMessagesThread()
+{
+    this->mutex->lock();
+
+    BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
+    MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
+
+    this->mutex->unlock();
+
+    emit this->workFinished();
+}
+
+void RunMatlabParserWorker::runMatlabParserThread()
+{
+    this->mutex->lock();
+    QApplication::processEvents();
+    std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 run matlab_parser matlab_parser'";
+    if (system(command.c_str()))
+    {
+        std::cout << "Issue running parser" << std::endl;
+    }
+    this->mutex->unlock();
+
+    emit this->workFinished();
 }
