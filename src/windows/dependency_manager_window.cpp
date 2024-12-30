@@ -1,10 +1,11 @@
 #include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
 
-DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, QWidget *parent) : QWidget(parent)
+DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &height, const std::string &output_path, QWidget *parent) : QDialog(parent)
 {
     this->main_layout = new QVBoxLayout();
     this->resize(width, height);
     this->setWindowTitle("Configure Dependency Packages");
+    this->setWindowModality(Qt::ApplicationModal);
 
     this->bag_packages.clear();
     this->packages.clear();
@@ -45,7 +46,7 @@ DependencyManagerWindow::DependencyManagerWindow(const int &width, const int &he
     QObject::connect(this->remove_depends_button, &QPushButton::released, this, &DependencyManagerWindow::openRemoveDependsWindow);
 
     // Launch the recommended dependency window on startup
-    RecommendedDependsWindow recommended_depends_window(bag_packages, output_path);
+    RecommendedDependsWindow recommended_depends_window(bag_packages, output_path, parent);
     recommended_depends_window.exec();
 
     this->setLayout(this->main_layout);
@@ -121,7 +122,7 @@ bool DependencyManagerWindow::vectorContains(const std::vector<std::string> &vec
 
 void DependencyManagerWindow::cleanupDependsFile()
 {
-    // Rewrite depends.txt to have to repeat lines
+    // Rewrite depends.txt to have no repeat lines
     std::string filename = output_path + "/files/depends.txt";
 
     if (std::filesystem::exists(filename))

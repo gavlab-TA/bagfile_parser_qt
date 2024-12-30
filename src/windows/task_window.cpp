@@ -3,7 +3,7 @@
 TaskWindow::TaskWindow(const std::string &message, QWidget* parent) : QDialog(parent)
 {
     this->setWindowModality(Qt::ApplicationModal);
-    this->resize(500, 500);
+    this->resize(500, 250);
     this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
 
     this->setWindowTitle("Please Wait");

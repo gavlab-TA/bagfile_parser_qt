@@ -6,6 +6,7 @@
 #include <QPushButton>
 #include <QLayout>
 #include <QtWidgets>
+#include <QDialog>
 
 #include "rclcpp/rclcpp.hpp"
 #include <rosbag2_cpp/readers/sequential_reader.hpp>
@@ -16,7 +17,7 @@
 #include "bagfile_parser_qt/windows/string_display_window.hpp"
 #include "bagfile_parser_qt/windows/remove_depends_window.hpp"
 
-class DependencyManagerWindow : public QWidget
+class DependencyManagerWindow : public QDialog
 {
     Q_OBJECT
 

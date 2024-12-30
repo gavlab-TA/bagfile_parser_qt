@@ -96,7 +96,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
     QObject::connect(this->autoconfigure_generator_button, &QPushButton::released, this, &MainWindow::autoconfigureGenerator);
     QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateParser);
-    QObject::connect(this->build_csv_parser_button, &QPushButton::released, this, &MainWindow::buildParser);
+    QObject::connect(this->build_csv_parser_button, &QPushButton::released, this, &MainWindow::buildCsvParser);
     QObject::connect(this->run_csv_parser_button, &QPushButton::released, this, &MainWindow::runCsvParser);
     QObject::connect(this->generate_csv_matlab_parser_button, &QPushButton::released, this, &MainWindow::generateCsvMatlabParser);
     QObject::connect(this->generate_matlab_parser_button, &QPushButton::released, this, &MainWindow::generateMatlabParser);
@@ -171,8 +171,7 @@ void MainWindow::openBagSelectWindow()
     mutex->lock();
 
     // Select Bagfile Directory
-    QWidget w;
-    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(this, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
     bagfile_path = path.toStdString();
 
     // Read and store bag metadata
@@ -212,7 +211,7 @@ void MainWindow::openConfigureParserWindow()
 {
     mutex->lock();
 
-    ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path);
+    ConfigureWindow *configure_window = new ConfigureWindow(500, 500, output_path, this);
     configure_window->exec();
 
     mutex->unlock();
@@ -232,8 +231,8 @@ void MainWindow::openConfigureDependsWindow()
 {
     mutex->lock();
 
-    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path);
-    dependency_window->show();
+    DependencyManagerWindow *dependency_window = new DependencyManagerWindow(500, 500, output_path, this);
+    dependency_window->exec();
 
     mutex->unlock();
 }
@@ -246,6 +245,8 @@ void MainWindow::autoconfigureGenerator()
 
     AnalyzeMessagesWorker* worker = new AnalyzeMessagesWorker(mutex, output_path);
     QThread* thread = new QThread();
+    TaskWindow* task_window = new TaskWindow("Generating Message Resources... Please Wait...", this);
+
     worker->moveToThread(thread);
 
     QObject::connect(thread, &QThread::started, worker, &AnalyzeMessagesWorker::runAnalyzeMessagesThread);
@@ -253,10 +254,12 @@ void MainWindow::autoconfigureGenerator()
     QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, this, &MainWindow::resetStatusLabel);
     QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, worker, &AnalyzeMessagesWorker::deleteLater);
     QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    QObject::connect(worker, &AnalyzeMessagesWorker::workFinished, task_window, &TaskWindow::closeWindow);
 
     mutex->unlock();
 
     thread->start();
+    task_window->exec();
 }
 
 void MainWindow::generateParser()
@@ -271,7 +274,7 @@ void MainWindow::generateParser()
     mutex->unlock();
 }
 
-void MainWindow::buildParser()
+void MainWindow::buildCsvParser()
 {
     mutex->lock();
 
@@ -351,14 +354,25 @@ void MainWindow::buildMatlabParser()
 
     status_label->setText("Building Parser");
     QApplication::processEvents();
-    std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
-    if (system(command.c_str()))
-    {
-        std::cout << "Issue Compiling Parser" << std::endl;
-    }
-    status_label->setText("Ready");
+    
+    BuildMatlabParserWorker* worker = new BuildMatlabParserWorker(mutex, output_path);
+    QThread* thread = new QThread();
+    worker->moveToThread(thread);
+
+    TaskWindow* task_window = new TaskWindow("Building MATLAB Parser Workspace... Please Wait...", this);
+
+    QObject::connect(thread, &QThread::started, worker, &BuildMatlabParserWorker::runBuildMatlabParserThread);
+    QObject::connect(worker, &BuildMatlabParserWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &BuildMatlabParserWorker::workFinished, worker, &BuildMatlabParserWorker::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    QObject::connect(thread, &QThread::finished, task_window, &TaskWindow::closeWindow);
+    QObject::connect(worker, &BuildMatlabParserWorker::success, this, &MainWindow::resetStatusLabel);
+    QObject::connect(worker, &BuildMatlabParserWorker::failure, this, &MainWindow::displayStatusError);
 
     mutex->unlock();
+
+    thread->start();
+    task_window->exec();
 }
 
 void MainWindow::runMatlabParser()
@@ -371,7 +385,7 @@ void MainWindow::runMatlabParser()
     QThread* thread = new QThread();
     worker->moveToThread(thread);
 
-    TaskWindow* task_window = new TaskWindow("MATLAB Parser Running... Please Wait...");
+    TaskWindow* task_window = new TaskWindow("MATLAB Parser Running... Please Wait...", this);
 
     QObject::connect(thread, &QThread::started, worker, &RunMatlabParserWorker::runMatlabParserThread);
     QObject::connect(worker, &RunMatlabParserWorker::workFinished, thread, &QThread::quit);
@@ -390,7 +404,7 @@ void MainWindow::resetParser()
     mutex->lock();
 
     // Run Confirmation Diaglog
-    QMessageBox msg_box;
+    QMessageBox msg_box(this);
     msg_box.setIcon(QMessageBox::Question);
     msg_box.setWindowTitle("Warning");
     msg_box.setText("This will remove all message files. Are you sure?");
@@ -424,6 +438,15 @@ void MainWindow::resetStatusLabel()
     this->mutex->unlock();
 }
 
+void MainWindow::displayStatusError()
+{
+    this->mutex->lock();
+
+    this->status_label->setText("Ready - Task finished with error");
+
+    this->mutex->unlock();
+}
+
 void AnalyzeMessagesWorker::runAnalyzeMessagesThread()
 {
     this->mutex->lock();
@@ -448,4 +471,13 @@ void RunMatlabParserWorker::runMatlabParserThread()
     this->mutex->unlock();
 
     emit this->workFinished();
+}
+
+void BuildMatlabParserWorker::runBuildMatlabParserThread()
+{
+    std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+    if (system(command.c_str()))
+    {
+        std::cout << "Issue Compiling Parser" << std::endl;
+    }
 }

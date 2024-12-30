@@ -74,8 +74,7 @@ ConfigureWindow::~ConfigureWindow()
 void ConfigureWindow::openAddPackageWindow()
 {
     // Get Path of external package
-    QWidget w;
-    QString path = QFileDialog::getExistingDirectory(&w, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(this, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     std::string full_path = path.toStdString();
     std::vector<std::string> split_string;
@@ -141,7 +140,7 @@ void ConfigureWindow::buildWorkspace()
 
 void ConfigureWindow::runBuild()
 {
-    TaskWindow* task_window = new TaskWindow("Building Dependency Packages... Please Wait...");
+    TaskWindow* task_window = new TaskWindow("Building Dependency Packages... Please Wait...", this);
     BuildMessagesWorker* worker = new BuildMessagesWorker(output_path);
     QThread* thread = new QThread();
     worker->moveToThread(thread);
@@ -257,7 +256,7 @@ void ConfigureWindow::getWorkspaceLog()
 bool ConfigureWindow::confirmDialog()
 {
     // Prompt user for confirmation before clearing the dependencies
-    QMessageBox msg_box;
+    QMessageBox msg_box(this);
     msg_box.setIcon(QMessageBox::Question);
     msg_box.setWindowTitle("Warning");
     msg_box.setText("This will remove all message files. Are you sure?");

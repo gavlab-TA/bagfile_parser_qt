@@ -87,7 +87,7 @@ class MainWindow : public QWidget
     void openConfigureDependsWindow();
     void autoconfigureGenerator();
     void generateParser();
-    void buildParser();
+    void buildCsvParser();
     void runCsvParser();
     void generateCsvMatlabParser();
 
@@ -96,6 +96,7 @@ class MainWindow : public QWidget
     void runMatlabParser();
     void resetParser();
     void resetStatusLabel();
+    void displayStatusError();
 };
 
 class AnalyzeMessagesWorker : public QObject
@@ -140,6 +141,30 @@ class RunMatlabParserWorker : public QObject
 
     signals:
     void workFinished();
+};
+
+class BuildMatlabParserWorker : public QObject
+{
+    Q_OBJECT
+
+    public: 
+    explicit BuildMatlabParserWorker(QMutex *mutex, const std::string &output_path, QObject* parent = nullptr) : QObject(parent)
+    {
+        this->mutex = mutex;
+        this->output_path = output_path;
+    }
+
+    private:
+    QMutex* mutex;
+    std::string output_path;
+
+    public slots:
+    void runBuildMatlabParserThread();
+
+    signals:
+    void workFinished();
+    void success();
+    void failure();
 };
 
 #endif
