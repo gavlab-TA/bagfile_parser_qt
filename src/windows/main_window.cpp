@@ -95,7 +95,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
     QObject::connect(this->autoconfigure_generator_button, &QPushButton::released, this, &MainWindow::autoconfigureGenerator);
-    QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateParser);
+    QObject::connect(this->generate_parser_button, &QPushButton::released, this, &MainWindow::generateCsvParser);
     QObject::connect(this->build_csv_parser_button, &QPushButton::released, this, &MainWindow::buildCsvParser);
     QObject::connect(this->run_csv_parser_button, &QPushButton::released, this, &MainWindow::runCsvParser);
     QObject::connect(this->generate_csv_matlab_parser_button, &QPushButton::released, this, &MainWindow::generateCsvMatlabParser);
@@ -262,7 +262,7 @@ void MainWindow::autoconfigureGenerator()
     task_window->exec();
 }
 
-void MainWindow::generateParser()
+void MainWindow::generateCsvParser()
 {
     mutex->lock();
 
@@ -280,14 +280,25 @@ void MainWindow::buildCsvParser()
 
     status_label->setText("Building Parser");
     QApplication::processEvents();
-    std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
-    if (system(command.c_str()))
-    {
-        std::cout << "Issue Compiling Parser" << std::endl;
-    }
-    status_label->setText("Ready");
 
+    BuildCsvParserWorker* worker = new BuildCsvParserWorker(mutex, output_path);
+    QThread* thread = new QThread();
+    TaskWindow* task_window = new TaskWindow("Building CSV Parser... Please Wait...", this);
+
+    worker->moveToThread(thread);
+
+    QObject::connect(thread, &QThread::started, worker, &BuildCsvParserWorker::runBuildCsvParserThread);
+    QObject::connect(worker, &BuildCsvParserWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &BuildCsvParserWorker::workFinished, task_window, &TaskWindow::closeWindow);
+    QObject::connect(worker, &BuildCsvParserWorker::workFinished, worker, &BuildCsvParserWorker::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    QObject::connect(worker, &BuildCsvParserWorker::success, this, &MainWindow::resetStatusLabel);
+    QObject::connect(worker, &BuildCsvParserWorker::failure, this, &MainWindow::displayStatusError);
+    
     mutex->unlock();
+
+    thread->start();
+    task_window->exec();
 }
 
 void MainWindow::runCsvParser()
@@ -296,14 +307,24 @@ void MainWindow::runCsvParser()
 
     status_label->setText("Running CSV Parser");
     QApplication::processEvents();
-    std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 launch rosbag2_parser rosbag2_parser.launch.py'";
-    if (system(command.c_str()))
-    {
-        std::cout << "Issue running parser" << std::endl;
-    }
-    status_label->setText("Ready");
 
+    RunCsvParserWorker* worker = new RunCsvParserWorker(mutex, output_path);
+    QThread* thread = new QThread();
+    TaskWindow* task_window = new TaskWindow("Running CSV Parser... Please Wait...", this);
+
+    worker->moveToThread(thread);
+
+    QObject::connect(thread, &QThread::started, worker, &RunCsvParserWorker::runCsvParserThread);
+    QObject::connect(worker, &RunCsvParserWorker::workFinished, thread, &QThread::quit);
+    QObject::connect(worker, &RunCsvParserWorker::workFinished, this, &MainWindow::resetStatusLabel);
+    QObject::connect(worker, &RunCsvParserWorker::workFinished, worker, &RunCsvParserWorker::deleteLater);
+    QObject::connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    QObject::connect(worker, &RunCsvParserWorker::workFinished, task_window, &TaskWindow::closeWindow);
+    
     mutex->unlock();
+
+    thread->start();
+    task_window->exec();
 }
 
 void MainWindow::generateCsvMatlabParser()
@@ -447,12 +468,16 @@ void MainWindow::displayStatusError()
     this->mutex->unlock();
 }
 
+// --------------------------------------------------------------------------------------------------------
+// Thread Worker Objects
+// --------------------------------------------------------------------------------------------------------
+
 void AnalyzeMessagesWorker::runAnalyzeMessagesThread()
 {
     this->mutex->lock();
 
-    BagAnalyzer bag_analyzer(output_path + "/files/selected_topic_data.txt", output_path);
-    MessageAnalyzer message_analyzer(output_path + "/files/parser_files/", output_path);
+    BagAnalyzer bag_analyzer(this->output_path + "/files/selected_topic_data.txt", this->output_path);
+    MessageAnalyzer message_analyzer(this->output_path + "/files/parser_files/", this->output_path);
 
     this->mutex->unlock();
 
@@ -463,7 +488,7 @@ void RunMatlabParserWorker::runMatlabParserThread()
 {
     this->mutex->lock();
     QApplication::processEvents();
-    std::string command = "bash -c 'source " + output_path + "/install/setup.bash && ros2 run matlab_parser matlab_parser'";
+    std::string command = "bash -c 'source " + this->output_path + "/install/setup.bash && ros2 run matlab_parser matlab_parser'";
     if (system(command.c_str()))
     {
         std::cout << "Issue running parser" << std::endl;
@@ -475,9 +500,53 @@ void RunMatlabParserWorker::runMatlabParserThread()
 
 void BuildMatlabParserWorker::runBuildMatlabParserThread()
 {
-    std::string command = "cd " + output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+    this->mutex->lock();
+    std::string command = "cd " + this->output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
+    if (system(command.c_str()))
+    {
+        emit this->failure();
+        std::cout << "Issue Compiling Parser" << std::endl;
+    }
+    else
+    {
+        emit this->success();
+    }
+    this->mutex->unlock();
+
+    emit this->workFinished();
+}
+
+void BuildCsvParserWorker::runBuildCsvParserThread()
+{
+    this->mutex->lock();
+
+    std::string command = "cd " + this->output_path + " && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release --symlink-install";
     if (system(command.c_str()))
     {
         std::cout << "Issue Compiling Parser" << std::endl;
+        emit this->failure();
     }
+    else
+    {
+        emit this->success();
+    }
+
+    this->mutex->unlock();
+
+    emit this->workFinished();
+}
+
+void RunCsvParserWorker::runCsvParserThread()
+{
+    this->mutex->lock();
+
+    std::string command = "bash -c 'source " + this->output_path + "/install/setup.bash && ros2 launch rosbag2_parser rosbag2_parser.launch.py'";
+    if (system(command.c_str()))
+    {
+        std::cout << "Issue running parser" << std::endl;
+    }
+
+    this->mutex->unlock();
+
+    emit this->workFinished();
 }

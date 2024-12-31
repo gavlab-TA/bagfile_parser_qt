@@ -86,7 +86,7 @@ class MainWindow : public QWidget
     void openSelectTopicsWindow();
     void openConfigureDependsWindow();
     void autoconfigureGenerator();
-    void generateParser();
+    void generateCsvParser();
     void buildCsvParser();
     void runCsvParser();
     void generateCsvMatlabParser();
@@ -98,6 +98,9 @@ class MainWindow : public QWidget
     void resetStatusLabel();
     void displayStatusError();
 };
+
+
+// Thread Worker Objects 
 
 class AnalyzeMessagesWorker : public QObject
 {
@@ -165,6 +168,52 @@ class BuildMatlabParserWorker : public QObject
     void workFinished();
     void success();
     void failure();
+};
+
+class BuildCsvParserWorker : public QObject
+{
+    Q_OBJECT
+
+    public:
+    explicit BuildCsvParserWorker(QMutex *mutex, const std::string &output_path, QObject* parent = nullptr) : QObject(parent)
+    {
+        this->mutex = mutex;
+        this->output_path = output_path;
+    }
+
+    private:
+    QMutex* mutex;
+    std::string output_path;
+
+    public slots:
+    void runBuildCsvParserThread();
+
+    signals:
+    void workFinished();
+    void success();
+    void failure();    
+};
+
+class RunCsvParserWorker : public QObject
+{
+    Q_OBJECT
+
+    public: 
+    explicit RunCsvParserWorker(QMutex *mutex, const std::string &output_path, QObject* parent = nullptr) : QObject(parent)
+    {
+        this->mutex = mutex;
+        this->output_path = output_path;
+    }
+
+    private:
+    QMutex* mutex;
+    std::string output_path;
+
+    public slots:
+    void runCsvParserThread();
+
+    signals:
+    void workFinished();
 };
 
 #endif
