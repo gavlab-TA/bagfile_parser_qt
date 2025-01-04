@@ -40,16 +40,19 @@ class MainWindow : public QWidget
     QGridLayout* main_layout;
     QVBoxLayout* workflow_layout;
     QGridLayout* bag_select_layout;
+    QGridLayout* output_directory_layout;
     QGridLayout* parser_generator_layout;
 
     //Labels
     QLabel* bag_path_label;
+    QLabel* output_directory_label;
     QLabel* status_label;
     QLabel* csv_parser_label;
     QLabel* matlab_parser_label;
     
     //Buttons
-    QPushButton* bag_select_button;   
+    QPushButton* bag_select_button;
+    QPushButton* output_directory_select_button;   
     QPushButton* configure_parser_button;
     QPushButton* select_topics_button;
     QPushButton* configure_depends_button;
@@ -70,6 +73,7 @@ class MainWindow : public QWidget
     std::string bagfile_path;
     std::string share_path;
     std::string output_path;
+    std::string data_output_path;
 
     // Rosbag Data
     rosbag2_storage::BagMetadata data;
@@ -82,6 +86,7 @@ class MainWindow : public QWidget
 
     private slots:
     void openBagSelectWindow();
+    void openOutputDirectorySelectWindow();
     void openConfigureParserWindow();
     void openSelectTopicsWindow();
     void openConfigureDependsWindow();

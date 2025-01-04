@@ -9,15 +9,18 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->workflow_layout = new QVBoxLayout();
     this->parser_generator_layout = new QGridLayout();
     this->bag_select_layout = new QGridLayout();
+    this->output_directory_layout = new QGridLayout();
 
     // Init Labels
     this->matlab_parser_label = new QLabel();
     this->csv_parser_label = new QLabel();
     this->bag_path_label = new QLabel();
+    this->output_directory_label = new QLabel();
     this->status_label = new QLabel();
 
     // Init Buttons
     this->bag_select_button = new QPushButton();
+    this->output_directory_select_button = new QPushButton();
     this->configure_parser_button = new QPushButton();
     this->generate_parser_button = new QPushButton();
     this->select_topics_button = new QPushButton();
@@ -39,6 +42,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     // Set Button Text
     this->bag_select_button->setText("Select Bagfile");
+    this->output_directory_select_button->setText("Select Data Output Directory");
     this->configure_parser_button->setText("Manage Package Dependencies");
     this->generate_parser_button->setText("Generate CSV Parser");
     this->select_topics_button->setText("Select Topics to Parse");
@@ -65,6 +69,10 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->bag_select_layout->addWidget(this->bag_select_button, 0, 0, 1, 1);
     this->bag_select_layout->addWidget(this->bag_path_label, 1, 0, 1, 1, Qt::AlignCenter);
 
+    // Pack Data Output Layout
+    this->output_directory_layout->addWidget(this->output_directory_select_button, 0, 0, 1, 1);
+    this->output_directory_layout->addWidget(this->output_directory_label, 1, 0, 1, 1, Qt::AlignCenter);
+
     // Pack Parser Generator Layout
     this->parser_generator_layout->addWidget(this->csv_parser_label, 0, 0, Qt::AlignCenter);
     this->parser_generator_layout->addWidget(this->matlab_parser_label, 0, 1, Qt::AlignCenter);
@@ -78,6 +86,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     // Pack Main Layouts
     this->workflow_layout->addLayout(this->bag_select_layout);
+    this->workflow_layout->addLayout(this->output_directory_layout);
     this->workflow_layout->addWidget(this->select_topics_button);
     this->workflow_layout->addWidget(this->configure_depends_button);
     this->workflow_layout->addWidget(this->configure_parser_button);
@@ -91,6 +100,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
 
     // Set Button Callbacks
     QObject::connect(this->bag_select_button, &QPushButton::released, this, &MainWindow::openBagSelectWindow);
+    QObject::connect(this->output_directory_select_button, &QPushButton::released, this, &MainWindow::openOutputDirectorySelectWindow);
     QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
     QObject::connect(this->select_topics_button, &QPushButton::released, this, &MainWindow::openSelectTopicsWindow);
     QObject::connect(this->configure_depends_button, &QPushButton::released, this, &MainWindow::openConfigureDependsWindow);
@@ -120,6 +130,13 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     // Setup Local Files 
     this->setupFileLocations();
     this->mutex = new QMutex();
+
+    // Prompt Paths from User
+    this->openBagSelectWindow();
+    this->openOutputDirectorySelectWindow();
+    this->openSelectTopicsWindow();
+    this->openConfigureDependsWindow();
+    this->openConfigureParserWindow();
 }
 
 MainWindow::~MainWindow()
@@ -171,7 +188,7 @@ void MainWindow::openBagSelectWindow()
     mutex->lock();
 
     // Select Bagfile Directory
-    QString path = QFileDialog::getExistingDirectory(this, QString("Directory"), "~", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(this, QString("Select Bagfile to Parse"), "~", QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
     bagfile_path = path.toStdString();
 
     // Read and store bag metadata
@@ -203,6 +220,20 @@ void MainWindow::openBagSelectWindow()
     {
         bag_path_label->setText("NO BAG FOUND");
     }
+
+    mutex->unlock();
+}
+
+void MainWindow::openOutputDirectorySelectWindow()
+{
+    mutex->lock();
+
+    // Select Output Directory
+    QString path = QFileDialog::getExistingDirectory(this, QString("Select Data Output Directory"), "~", QFileDialog::DontResolveSymlinks | QFileDialog::DontUseNativeDialog);
+    data_output_path = path.toStdString();
+
+    // Display Selected Output Path in Main Window
+    output_directory_label->setText(data_output_path.c_str());
 
     mutex->unlock();
 }
@@ -268,7 +299,7 @@ void MainWindow::generateCsvParser()
 
     status_label->setText("Generating Parser");
     QApplication::processEvents();
-    CsvParserGenerator csv_parser_generator(output_path, bagfile_path);
+    CsvParserGenerator csv_parser_generator(output_path, bagfile_path, data_output_path);
     status_label->setText("Ready");
 
     mutex->unlock();
@@ -333,7 +364,7 @@ void MainWindow::generateCsvMatlabParser()
 
     status_label->setText("Generating Parser");
     QApplication::processEvents();
-    CsvMatlabGenerator csv_matlab_generator(bagfile_path, output_path);
+    CsvMatlabGenerator csv_matlab_generator(data_output_path, output_path);
     status_label->setText("Ready");
 
     mutex->unlock();
@@ -345,7 +376,7 @@ void MainWindow::generateMatlabParser()
 
     status_label->setText("Generating Parser");
     QApplication::processEvents();
-    MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path);
+    MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path, data_output_path);
     std::string command;
 
     // Symlink TinyMAT to generated workspace for use with the Matlab parser

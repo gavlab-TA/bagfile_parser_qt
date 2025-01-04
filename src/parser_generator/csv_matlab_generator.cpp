@@ -4,15 +4,8 @@ CsvMatlabGenerator::CsvMatlabGenerator(const std::string &output_file_path, cons
 {
     this->output_file_path = output_file_path;
     this->parser_path = parser_path;
-
-    std::vector<std::string> split_string;
-    boost::split(split_string, output_file_path, boost::is_any_of("/"));
-    this->output_file_path = "";
-    for (size_t i = 0; i < split_string.size()-1; ++i)
-    {
-        this->output_file_path += split_string.at(i) + "/";
-    }
-    this->output_file_path += "parse_csv2mat.m";
+    
+    this->output_file_path += "/parse_csv2mat.m";
 
     loadTopicData();
     generateMatlabParser();

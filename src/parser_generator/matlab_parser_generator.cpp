@@ -1,9 +1,10 @@
 #include "bagfile_parser_qt/parser_generator/matlab_parser_generator.hpp"
 
-MatlabParserGenerator::MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename)
+MatlabParserGenerator::MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path)
 {
     this->output_path = output_path + "/";
     this->bag_filename = bag_filename;
+    this->data_output_path = data_output_path+"/";
 
     loadVectors();
     setupFiles();
@@ -309,7 +310,7 @@ void MatlabParserGenerator::writeSource()
     }
 
     output << "\tstd::string bag_filename = \"" + bag_filename + "\";\n";
-    output << "\tthis->path = \"" + temp + "\";\n";
+    output << "\tthis->path = \"" + data_output_path + "\";\n";
 
     output << "\tthis->reader = new rosbag2_cpp::readers::SequentialReader();\n";
     output << "\tthis->storage_options.uri = bag_filename;\n";

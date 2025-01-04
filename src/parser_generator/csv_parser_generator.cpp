@@ -1,9 +1,10 @@
 #include "bagfile_parser_qt/parser_generator/csv_parser_generator.hpp"
 
-CsvParserGenerator::CsvParserGenerator(const std::string &output_path, const std::string &bag_filename)
+CsvParserGenerator::CsvParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path)
 {
     this->output_path = output_path;
     this->output_package_path = output_path + "/src/rosbag2_parser/";
+    this->data_output_path = data_output_path + "/";
     this->bag_filename = bag_filename;
 
     this->loadVectors();
@@ -572,7 +573,7 @@ void CsvParserGenerator::writeConfig()
     std::stringstream output;
     output << "rosbag2_parser:\n";
     output << "  ros__parameters:\n";
-    output << "    output_file_path: \"" + filepath + "\"\n";
+    output << "    output_file_path: \"" + data_output_path + "\"\n";
     output << "    bagfile: \"" + bag_filename + "\"\n";
 
     config_file.open(config_filename, std::ios_base::trunc);
