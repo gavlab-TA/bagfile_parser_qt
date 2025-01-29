@@ -12,7 +12,7 @@ cd bagfile_parser_qt
 ```
 
 ## Running the Package
-This package creates and run parsers for ros2 bagfiles. Currently only SQLite3 bags can be run in the parser, but this will be updated in the near future. 
+This package creates and run parsers for ros2 bagfiles. Currently the parser is compatable with SQLite3 and MCAP bagfile storage types.
 
 This package compiles as part of a ROS workspace and can be run using 
 ```
@@ -24,6 +24,12 @@ This will open a GUI menu that can be used to configure a parser to handle a giv
 The GUI should be navigated from top to bottom. Not all steps are dependent on previous ones but many are. All menus besides the select bagfile either dynamically react to other choices or remember previous inputs for convenience. The one button that needs to be pressed every time is the "Select Bagfile" button since the parsers directly access information from this step. 
 
 The data files (.csv, .mat) are output to the same directory that the bagfile directory is located in. The output location will be configurable in the future.
+
+# Current State of Operations
+The current version of this tool automatically prompts the user for several pieces of information. All of the prompt windows that open are the same that can be accessed through the main menu. The purpose of these popups is to ensure that certain pieces of data are available in a proper order on initialization. These popups cover the operating steps of Select Storage Type through Manage Package Dependencies. If these popups are answered properly, the next step will be Run Message Analysis. The process can be effectively started at this button and the parser can be run by simply working through the remaining steps on the main menu.
+
+## Select Storage Type
+This button opens a dropdown menu for selecting the storage type used in the bag you are trying to parse. This needs to be answered before selecting a bag or a crash may occur. A crash may also occur if you select a different type of storage than the selected bag uses.
 
 ## Select Bagfile
 This button opens a menu for selecting a bagfile using the Ubuntu files system. The interface only allows the selection of directories. To select a bagfile, navigate to where the bag's .db3 file is located. Once in that folder, press the "open" button at the top right of the window. This will select that folder as the bagfile folder.
