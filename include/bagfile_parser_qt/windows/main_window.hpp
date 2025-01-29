@@ -16,6 +16,7 @@
 #include <fstream>
 #include <boost/filesystem.hpp>
 
+#include "bagfile_parser_qt/windows/storage_selector_window.hpp"
 #include "bagfile_parser_qt/windows/configure_window.hpp"
 #include "bagfile_parser_qt/windows/select_topics_window.hpp"
 #include "bagfile_parser_qt/windows/dependency_manager_window.hpp"
@@ -39,11 +40,13 @@ class MainWindow : public QWidget
     // Layouts
     QGridLayout* main_layout;
     QVBoxLayout* workflow_layout;
+    QGridLayout* storage_type_layout;
     QGridLayout* bag_select_layout;
     QGridLayout* output_directory_layout;
     QGridLayout* parser_generator_layout;
 
     //Labels
+    QLabel* storage_type_label;
     QLabel* bag_path_label;
     QLabel* output_directory_label;
     QLabel* status_label;
@@ -51,6 +54,7 @@ class MainWindow : public QWidget
     QLabel* matlab_parser_label;
     
     //Buttons
+    QPushButton* storage_type_select_button;
     QPushButton* bag_select_button;
     QPushButton* output_directory_select_button;   
     QPushButton* configure_parser_button;
@@ -80,11 +84,15 @@ class MainWindow : public QWidget
 
     // Has Bag been selected flag
     bool bag_selected;
+    
+    // Type of Bag Storage
+    std::string storage_type;
 
     // Setup local files
     void setupFileLocations();
 
     private slots:
+    void openStorageTypeSelectWindow();
     void openBagSelectWindow();
     void openOutputDirectorySelectWindow();
     void openConfigureParserWindow();

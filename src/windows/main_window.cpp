@@ -8,10 +8,12 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->main_layout = new QGridLayout();
     this->workflow_layout = new QVBoxLayout();
     this->parser_generator_layout = new QGridLayout();
+    this->storage_type_layout = new QGridLayout();
     this->bag_select_layout = new QGridLayout();
     this->output_directory_layout = new QGridLayout();
 
     // Init Labels
+    this->storage_type_label = new QLabel();
     this->matlab_parser_label = new QLabel();
     this->csv_parser_label = new QLabel();
     this->bag_path_label = new QLabel();
@@ -19,6 +21,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->status_label = new QLabel();
 
     // Init Buttons
+    this->storage_type_select_button = new QPushButton();
     this->bag_select_button = new QPushButton();
     this->output_directory_select_button = new QPushButton();
     this->configure_parser_button = new QPushButton();
@@ -41,6 +44,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->status_label->setText("Ready");
 
     // Set Button Text
+    this->storage_type_select_button->setText("Select Bagfile Storage Type");
     this->bag_select_button->setText("Select Bagfile");
     this->output_directory_select_button->setText("Select Data Output Directory");
     this->configure_parser_button->setText("Manage Package Dependencies");
@@ -57,6 +61,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->run_matlab_parser_button->setText("Run Matlab Parser");
 
     // Set Additional Button Settings
+    this->storage_type_select_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->generate_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->build_csv_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->run_csv_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -64,6 +69,10 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->generate_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->build_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     this->run_matlab_parser_button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    // Pack Storage Type Layout
+    this->storage_type_layout->addWidget(this->storage_type_select_button, 0, 0, 1, 1);
+    this->storage_type_layout->addWidget(this->storage_type_label, 1, 0, 1, 1, Qt::AlignCenter);
 
     // Pack Bag Select Layout
     this->bag_select_layout->addWidget(this->bag_select_button, 0, 0, 1, 1);
@@ -85,6 +94,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->parser_generator_layout->addWidget(this->run_matlab_parser_button, 3, 1);
 
     // Pack Main Layouts
+    this->workflow_layout->addLayout(this->storage_type_layout);
     this->workflow_layout->addLayout(this->bag_select_layout);
     this->workflow_layout->addLayout(this->output_directory_layout);
     this->workflow_layout->addWidget(this->select_topics_button);
@@ -99,6 +109,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->setLayout(this->main_layout);
 
     // Set Button Callbacks
+    QObject::connect(this->storage_type_select_button, &QPushButton::released, this, &MainWindow::openStorageTypeSelectWindow);
     QObject::connect(this->bag_select_button, &QPushButton::released, this, &MainWindow::openBagSelectWindow);
     QObject::connect(this->output_directory_select_button, &QPushButton::released, this, &MainWindow::openOutputDirectorySelectWindow);
     QObject::connect(this->configure_parser_button, &QPushButton::released, this, &MainWindow::openConfigureParserWindow);
@@ -132,6 +143,7 @@ MainWindow::MainWindow(const int &width, const int &height) : QWidget()
     this->mutex = new QMutex();
 
     // Prompt Paths from User
+    this->openStorageTypeSelectWindow();
     this->openBagSelectWindow();
     this->openOutputDirectorySelectWindow();
     this->openSelectTopicsWindow();
@@ -183,6 +195,21 @@ void MainWindow::setupFileLocations()
     }
 }
 
+void MainWindow::openStorageTypeSelectWindow()
+{
+    mutex->lock();
+
+    // Create Window
+    StorageSelectorWindow *storage_selector = new StorageSelectorWindow(500, 200, this);
+    storage_selector->exec();
+    
+    // Get Storage Type as std::string
+    storage_type = storage_selector->getStorageType();
+    storage_type_label->setText(QString(storage_type.c_str()));
+
+    mutex->unlock();
+}
+
 void MainWindow::openBagSelectWindow()
 {
     mutex->lock();
@@ -203,7 +230,7 @@ void MainWindow::openBagSelectWindow()
         std::unique_ptr<rosbag2_cpp::converter_interfaces::SerializationFormatDeserializer> deserializer;
 
         storage_options.uri = bagfile_path;
-        storage_options.storage_id = "sqlite3";
+        storage_options.storage_id = storage_type;
         converter_options.input_serialization_format = "cdr";
         converter_options.output_serialization_format = "cdr";
         deserializer = factory.load_deserializer("cdr");
@@ -299,7 +326,7 @@ void MainWindow::generateCsvParser()
 
     status_label->setText("Generating Parser");
     QApplication::processEvents();
-    CsvParserGenerator csv_parser_generator(output_path, bagfile_path, data_output_path);
+    CsvParserGenerator csv_parser_generator(output_path, bagfile_path, data_output_path, storage_type);
     status_label->setText("Ready");
 
     mutex->unlock();
@@ -376,7 +403,7 @@ void MainWindow::generateMatlabParser()
 
     status_label->setText("Generating Parser");
     QApplication::processEvents();
-    MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path, data_output_path);
+    MatlabParserGenerator matlab_parser_generator(output_path, bagfile_path, data_output_path, storage_type);
     std::string command;
 
     // Symlink TinyMAT to generated workspace for use with the Matlab parser

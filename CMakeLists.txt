@@ -31,6 +31,7 @@ set(MOC_HEADERS
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/string_display_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/remove_depends_window.hpp
     ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/task_window.hpp
+    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/storage_selector_window.hpp
 )
 
 # List to store the generated moc files
@@ -66,6 +67,7 @@ set(MOC_SOURCES
   ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_string_display_window.cpp
   ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_remove_depends_window.cpp
   ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_task_window.cpp
+  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_storage_selector_window.cpp
 )
 
 set(WINDOW_SRCS 
@@ -78,6 +80,7 @@ set(WINDOW_SRCS
   src/windows/string_display_window.cpp
   src/windows/remove_depends_window.cpp
   src/windows/task_window.cpp
+  src/windows/storage_selector_window.cpp
 )
 
 set(PARSER_SRCS

@@ -1,10 +1,11 @@
 #include "bagfile_parser_qt/parser_generator/matlab_parser_generator.hpp"
 
-MatlabParserGenerator::MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path)
+MatlabParserGenerator::MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path, const std::string &storage_type)
 {
     this->output_path = output_path + "/";
     this->bag_filename = bag_filename;
     this->data_output_path = data_output_path+"/";
+    this->storage_type = storage_type;
 
     loadVectors();
     setupFiles();
@@ -314,7 +315,7 @@ void MatlabParserGenerator::writeSource()
 
     output << "\tthis->reader = new rosbag2_cpp::readers::SequentialReader();\n";
     output << "\tthis->storage_options.uri = bag_filename;\n";
-    output << "\tthis->storage_options.storage_id = \"sqlite3\";\n";
+    output << "\tthis->storage_options.storage_id = \"" + storage_type + "\";\n";
     output << "\tthis->converter_options.input_serialization_format = \"cdr\";\n";
     output << "\tthis->converter_options.output_serialization_format = \"cdr\";\n";
     output << "\tthis->cdr_deserializer = factory.load_deserializer(\"cdr\");\n";

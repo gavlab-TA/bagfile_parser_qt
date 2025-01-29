@@ -12,7 +12,7 @@
 class CsvParserGenerator
 {
     public:
-    CsvParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path);
+    CsvParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path, const std::string &storage_type);
     ~CsvParserGenerator();
 
     struct MsgSupportPair{
@@ -41,6 +41,7 @@ class CsvParserGenerator
     std::string data_output_path;
     std::string output_package_path;
     std::string bag_filename;
+    std::string storage_type;
 
     std::ofstream package_xml_file;
     std::ofstream cmake_lists_file;

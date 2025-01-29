@@ -11,7 +11,7 @@
 class MatlabParserGenerator
 {
     public: 
-    MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path);
+    MatlabParserGenerator(const std::string &output_path, const std::string &bag_filename, const std::string &data_output_path, const std::string &storage_type);
     ~MatlabParserGenerator();
 
     struct MsgSupportPair{
@@ -39,6 +39,7 @@ class MatlabParserGenerator
     std::string output_path;
     std::string data_output_path;
     std::string bag_filename;
+    std::string storage_type;
 
     std::ofstream package_xml_file;
     std::ofstream cmake_lists_file;
