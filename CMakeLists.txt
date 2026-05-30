@@ -1,113 +1,91 @@
-cmake_minimum_required(VERSION 3.8)
-project(bagfile_parser_qt VERSION 0.0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.16)
+project(bagfile_parser_qt VERSION 0.1.0 LANGUAGES CXX)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-cmake_policy(SET CMP0071 NEW)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_AUTOMOC ON)
-set(CMAKE_AUTORCC ON)
-set(CMAKE_AUTOUIC ON)
 
-# find dependencies
-find_package(ament_cmake REQUIRED)
-find_package(rosbag2_cpp REQUIRED)
-find_package(rclcpp REQUIRED)
+# --- MCAP headers (vendored in external/mcap/) ---
+set(MCAP_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/mcap/include)
+
+# --- System dependencies ---
+find_package(PkgConfig QUIET)
+find_package(Threads REQUIRED)
 find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
-find_package(Boost REQUIRED COMPONENTS filesystem system)
 
-include_directories(include)
-
-# List of header files that need moc
-set(MOC_HEADERS
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/main_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/configure_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/remove_packages_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/select_topics_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/dependency_manager_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/recommended_depends_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/string_display_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/remove_depends_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/task_window.hpp
-    ${CMAKE_SOURCE_DIR}/include/bagfile_parser_qt/windows/storage_selector_window.hpp
-)
-
-# List to store the generated moc files
-set(MOC_SOURCES)
-
-# Generate MOC files for each header in MOC_HEADERS
-foreach(HEADER ${MOC_HEADERS})
-  get_filename_component(HEADER_NAME ${HEADER} NAME_WE)
-  set(MOC_FILE "${CMAKE_SOURCE_DIR}/src/windows/moc/moc_${HEADER_NAME}.cpp")
-
-  # Ensure the moc directory exists
-  file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/src/windows/moc)
-
-  # Add the custom command to generate the moc file for each header
-  add_custom_command(
-    OUTPUT ${MOC_FILE}
-    COMMAND moc ${HEADER} -o ${MOC_FILE}
-    DEPENDS ${HEADER}
-    COMMENT "Generating MOC file for ${HEADER}"
-  )
-
-  # Append the generated MOC file to the list of sources
-  list(APPEND MOC_SOURCES ${MOC_FILE})
-endforeach()
-
-set(MOC_SOURCES
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_main_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_configure_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_remove_packages_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_select_topics_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_dependency_manager_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_recommended_depends_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_string_display_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_remove_depends_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_task_window.cpp
-  ${CMAKE_SOURCE_DIR}/src/windows/moc/moc_storage_selector_window.cpp
-)
-
-set(WINDOW_SRCS 
-  src/windows/main_window.cpp
-  src/windows/configure_window.cpp
-  src/windows/remove_packages_window.cpp
-  src/windows/select_topics_window.cpp
-  src/windows/dependency_manager_window.cpp
-  src/windows/recommended_depends_window.cpp
-  src/windows/string_display_window.cpp
-  src/windows/remove_depends_window.cpp
-  src/windows/task_window.cpp
-  src/windows/storage_selector_window.cpp
-)
-
-set(PARSER_SRCS
-  src/parser_generator/bag_analyzer.cpp
-  src/parser_generator/message_analyzer.cpp
-  src/parser_generator/csv_parser_generator.cpp
-  src/parser_generator/csv_matlab_generator.cpp
-  src/parser_generator/matlab_parser_generator.cpp
-)
-
-add_executable(bagfile_parser_qt src/main.cpp ${WINDOW_SRCS} ${MOC_SOURCES} ${PARSER_SRCS})
-target_link_libraries(bagfile_parser_qt Qt5::Widgets Qt5::Core Boost::filesystem Boost::system)
-
-ament_target_dependencies(bagfile_parser_qt rclcpp rosbag2_cpp)
-
-install(TARGETS bagfile_parser_qt DESTINATION lib/${PROJECT_NAME})
-
-if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  # the following line skips the linter which checks for copyrights
-  # uncomment the line when a copyright and license is not present in all source files
-  #set(ament_cmake_copyright_FOUND TRUE)
-  # the following line skips cpplint (only works in a git repo)
-  # uncomment the line when this package is not in a git repo
-  #set(ament_cmake_cpplint_FOUND TRUE)
-  ament_lint_auto_find_test_dependencies()
+# matio: try cmake config (vcpkg), fall back to pkg-config (Linux/macOS)
+find_package(matio CONFIG QUIET)
+if(NOT matio_FOUND AND PkgConfig_FOUND)
+    pkg_check_modules(MATIO REQUIRED IMPORTED_TARGET matio)
+endif()
+if(NOT matio_FOUND AND NOT TARGET PkgConfig::MATIO)
+    message(FATAL_ERROR "Could not find matio via find_package or pkg-config")
 endif()
 
-write_file(${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/package_path.txt "${CMAKE_SOURCE_DIR}")
-ament_package()
+# lz4 (optional): try cmake config, fall back to pkg-config
+find_package(lz4 CONFIG QUIET)
+if(NOT lz4_FOUND AND PkgConfig_FOUND)
+    pkg_check_modules(LZ4 IMPORTED_TARGET liblz4)
+endif()
+
+# zstd (optional): try cmake config, fall back to pkg-config
+find_package(zstd CONFIG QUIET)
+if(NOT TARGET zstd::libzstd_shared AND NOT TARGET zstd::libzstd_static AND PkgConfig_FOUND)
+    pkg_check_modules(ZSTD IMPORTED_TARGET libzstd)
+endif()
+
+add_executable(bagfile_parser_qt
+    src/main.cpp
+    src/converter.cpp
+    src/schema_parser.cpp
+    src/cdr_reader.cpp
+    src/mat_writer.cpp
+    src/csv_writer.cpp
+    src/gui.cpp
+    include/bagfile_parser_qt/gui.hpp
+)
+
+target_include_directories(bagfile_parser_qt PRIVATE
+    include
+)
+target_include_directories(bagfile_parser_qt SYSTEM PRIVATE
+    ${MCAP_INCLUDE_DIR}
+)
+
+# Link matio
+if(matio_FOUND)
+    target_link_libraries(bagfile_parser_qt PRIVATE matio::matio)
+else()
+    target_link_libraries(bagfile_parser_qt PRIVATE PkgConfig::MATIO)
+endif()
+
+target_link_libraries(bagfile_parser_qt PRIVATE
+    Qt5::Core
+    Qt5::Widgets
+    Threads::Threads
+)
+
+# Link lz4
+if(lz4_FOUND)
+    target_link_libraries(bagfile_parser_qt PRIVATE lz4::lz4)
+    target_compile_definitions(bagfile_parser_qt PRIVATE HAS_LZ4)
+elseif(TARGET PkgConfig::LZ4)
+    target_link_libraries(bagfile_parser_qt PRIVATE PkgConfig::LZ4)
+    target_compile_definitions(bagfile_parser_qt PRIVATE HAS_LZ4)
+endif()
+
+# Link zstd
+if(TARGET zstd::libzstd_shared)
+    target_link_libraries(bagfile_parser_qt PRIVATE zstd::libzstd_shared)
+    target_compile_definitions(bagfile_parser_qt PRIVATE HAS_ZSTD)
+elseif(TARGET zstd::libzstd_static)
+    target_link_libraries(bagfile_parser_qt PRIVATE zstd::libzstd_static)
+    target_compile_definitions(bagfile_parser_qt PRIVATE HAS_ZSTD)
+elseif(TARGET PkgConfig::ZSTD)
+    target_link_libraries(bagfile_parser_qt PRIVATE PkgConfig::ZSTD)
+    target_compile_definitions(bagfile_parser_qt PRIVATE HAS_ZSTD)
+endif()
+
+install(TARGETS bagfile_parser_qt DESTINATION bin)
