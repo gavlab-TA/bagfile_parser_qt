@@ -16,7 +16,7 @@ std::vector<std::string> findMissingSummaries(const std::string& bag_path);
 
 std::vector<TopicSummary> listTopics(const std::string& bag_path);
 
-enum class OutputFormat { MAT, CSV };
+enum class OutputFormat { MAT, CSV, BOTH };
 
 struct ConvertOptions
 {

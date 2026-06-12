@@ -4,7 +4,7 @@
 #include <QtCore/QString>
 #include <QtCore/QThread>
 #include <QtGui/QFont>
-#include <QtWidgets/QButtonGroup>
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QGridLayout>
@@ -148,12 +148,9 @@ MainWindow::MainWindow()
     this->topics_label_ = new QLabel("<no bag loaded>");
     this->topics_label_->setAlignment(Qt::AlignCenter);
 
-    this->mat_radio_ = new QRadioButton(".mat (MATLAB)");
-    this->csv_radio_ = new QRadioButton(".csv");
-    this->mat_radio_->setChecked(true);
-    QButtonGroup* fmt_group = new QButtonGroup(this);
-    fmt_group->addButton(this->mat_radio_);
-    fmt_group->addButton(this->csv_radio_);
+    this->mat_box_ = new QCheckBox(".mat");
+    this->mat_box_->setChecked(true);
+    this->csv_box_ = new QCheckBox(".csv");
 
     this->threads_spin_ = new QSpinBox;
     this->threads_spin_->setRange(1, 256);
@@ -181,20 +178,20 @@ MainWindow::MainWindow()
     top_grid->addWidget(this->topics_button_, 0, 0);
     top_grid->addWidget(this->topics_label_, 1, 0, Qt::AlignCenter);
 
-    QHBoxLayout* fmt_row = new QHBoxLayout;
-    fmt_row->addWidget(new QLabel("Format:"));
-    fmt_row->addWidget(this->mat_radio_);
-    fmt_row->addWidget(this->csv_radio_);
-    fmt_row->addStretch();
-    fmt_row->addWidget(new QLabel("Threads:"));
-    fmt_row->addWidget(this->threads_spin_);
+    QHBoxLayout* opts_row = new QHBoxLayout;
+    opts_row->addWidget(new QLabel("Output:"));
+    opts_row->addWidget(this->mat_box_);
+    opts_row->addWidget(this->csv_box_);
+    opts_row->addStretch();
+    opts_row->addWidget(new QLabel("Threads:"));
+    opts_row->addWidget(this->threads_spin_);
 
     QVBoxLayout* root = new QVBoxLayout(central);
     root->addWidget(this->status_label_);
     root->addLayout(bag_grid);
     root->addLayout(out_grid);
     root->addLayout(top_grid);
-    root->addLayout(fmt_row);
+    root->addLayout(opts_row);
     root->addWidget(this->convert_button_);
     root->addWidget(new QLabel("Log:"));
     root->addWidget(this->log_, 1);
@@ -347,7 +344,17 @@ void MainWindow::startConvert()
     opts.output_dir = this->output_path_;
     opts.topics = this->selected_topics_;
     opts.threads = this->threads_spin_->value();
-    opts.format = this->csv_radio_->isChecked() ? OutputFormat::CSV : OutputFormat::MAT;
+    bool want_mat = this->mat_box_->isChecked();
+    bool want_csv = this->csv_box_->isChecked();
+    if (!want_mat && !want_csv)
+    {
+        QMessageBox::warning(this, "No format selected",
+            "Select at least one of .mat or .csv.");
+        return;
+    }
+    opts.format = (want_mat && want_csv) ? OutputFormat::BOTH
+                : want_csv               ? OutputFormat::CSV
+                                         : OutputFormat::MAT;
 
     this->log_->appendPlainText("=== Converting ===");
     this->convert_button_->setEnabled(false);

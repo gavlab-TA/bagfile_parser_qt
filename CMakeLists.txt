@@ -13,7 +13,8 @@ set(MCAP_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/external/mcap/include)
 # --- System dependencies ---
 find_package(PkgConfig QUIET)
 find_package(Threads REQUIRED)
-find_package(Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Widgets REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Widgets REQUIRED)
 
 # matio: try cmake config (vcpkg), fall back to pkg-config (Linux/macOS)
 find_package(matio CONFIG QUIET)
@@ -62,8 +63,8 @@ else()
 endif()
 
 target_link_libraries(bagfile_parser_qt PRIVATE
-    Qt5::Core
-    Qt5::Widgets
+    Qt${QT_VERSION_MAJOR}::Core
+    Qt${QT_VERSION_MAJOR}::Widgets
     Threads::Threads
 )
 

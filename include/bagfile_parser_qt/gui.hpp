@@ -1,11 +1,11 @@
 #pragma once
+#include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPlainTextEdit>
-#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpinBox>
 #include <QtCore/QObject>
 #include <QtCore/QThread>
@@ -78,8 +78,8 @@ private:
     QPushButton* topics_button_;
     QLabel* topics_label_;
 
-    QRadioButton* mat_radio_;
-    QRadioButton* csv_radio_;
+    QCheckBox* mat_box_;
+    QCheckBox* csv_box_;
     QSpinBox* threads_spin_;
 
     QPushButton* convert_button_;

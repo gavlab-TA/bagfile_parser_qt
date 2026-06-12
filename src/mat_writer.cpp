@@ -5,6 +5,17 @@
 #include <cmath>
 #include <iostream>
 
+// Mat_VarCreateStruct was deprecated in libmatio 1.5.28 in favor of Mat_VarCreateStruct2.
+// Use the new API where available; fall back for older distros (e.g. Ubuntu 22.04 ships 1.5.21).
+static matvar_t* createStructVar(const char* name, int rank, const size_t* dims)
+{
+#if defined(MATIO_RELEASE_LEVEL) && MATIO_RELEASE_LEVEL >= 28
+    return Mat_VarCreateStruct2(name, rank, dims, nullptr);
+#else
+    return Mat_VarCreateStruct(name, rank, dims, nullptr, 0);
+#endif
+}
+
 CollectedData* CollectedData::child(const std::string& name)
 {
     for (std::pair<std::string, CollectedData>& entry : this->children)
@@ -417,7 +428,7 @@ static matvar_t* collectedToMatvar(const std::string& name, const CollectedData&
             }
 
             size_t dims[2] = {1, 1};
-            matvar_t* s = Mat_VarCreateStruct(name.c_str(), 2, dims, nullptr, 0);
+            matvar_t* s = createStructVar(name.c_str(), 2, dims);
             for (const std::pair<std::string, matvar_t*>& fv : built)
             {
                 Mat_VarAddStructField(s, fv.first.c_str());
@@ -439,7 +450,7 @@ void writeMat(const std::string& filepath, const std::string& var_name, const Co
     }
 
     size_t dims[2] = {1, 1};
-    matvar_t* root = Mat_VarCreateStruct(var_name.c_str(), 2, dims, nullptr, 0);
+    matvar_t* root = createStructVar(var_name.c_str(), 2, dims);
 
     Mat_VarAddStructField(root, "t");
     matvar_t* t_var = makeScalarArray("t", timestamps);

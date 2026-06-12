@@ -7,10 +7,24 @@ Reads ROS 2 MCAP bag files directly using a runtime schema-driven CDR walker —
 ## Dependencies
 
 - CMake >= 3.16
-- Qt5 (Core, Widgets)
-- libmatio (`sudo apt install libmatio-dev`)
+- Qt5 or Qt6 (Core, Widgets)
+- libmatio
 - liblz4 (optional, for LZ4-compressed MCAP chunks)
 - libzstd (optional, for Zstd-compressed MCAP chunks)
+
+### Installing dependencies
+
+**macOS (Homebrew):**
+
+```bash
+brew install cmake qt libmatio lz4 zstd
+```
+
+**Ubuntu/Debian:**
+
+```bash
+sudo apt install cmake qtbase5-dev libmatio-dev liblz4-dev libzstd-dev
+```
 
 ## Building
 

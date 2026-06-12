@@ -15,17 +15,19 @@ static void printUsage()
         "  bagfile_parser_qt                              Launch GUI\n"
         "  bagfile_parser_qt <bag_path> [options]         CLI mode\n"
         "\n"
+        "Outputs land in <output>/mat/ and/or <output>/csv/ depending on --format.\n"
+        "\n"
         "CLI options:\n"
-        "  -l, --list-topics      List topics and exit\n"
-        "  -t, --topics T1 T2 ... Topics to convert (default: all)\n"
-        "  -o, --output DIR       Output directory (default: cwd)\n"
-        "  -j, --threads N        Worker threads (default: hw cores)\n"
-        "  -f, --format mat|csv   Output format (default: mat)\n"
-        "  --byte-max N           Max dynamic byte-array length to keep (default: 256)\n"
-        "  --msg-max N            Max dynamic message-array count to keep (default: 20)\n"
-        "  --mem-budget-mb N      Cap aggregate in-flight data (default: auto, ~20% RAM)\n"
-        "  --keep-large           Don't auto-skip camera/lidar/radar (large) topics\n"
-        "  --large-msg-kb N       Retire a topic if any message exceeds N KB (default: 1024)\n";
+        "  -l, --list-topics         List topics and exit\n"
+        "  -t, --topics T1 T2 ...    Topics to convert (default: all)\n"
+        "  -o, --output DIR          Output directory (default: cwd)\n"
+        "  -j, --threads N           Worker threads (default: hw cores)\n"
+        "  -f, --format mat|csv|both Output format (default: mat)\n"
+        "  --byte-max N              Max dynamic byte-array length to keep (default: 256)\n"
+        "  --msg-max N               Max dynamic message-array count to keep (default: 20)\n"
+        "  --mem-budget-mb N         Cap aggregate in-flight data (default: auto, ~20% RAM)\n"
+        "  --keep-large              Don't auto-skip camera/lidar/radar (large) topics\n"
+        "  --large-msg-kb N          Retire a topic if any message exceeds N KB (default: 1024)\n";
 }
 
 static int runCli(int argc, char** argv)
@@ -68,17 +70,12 @@ static int runCli(int argc, char** argv)
             if (++i < argc)
             {
                 std::string f = argv[i];
-                if (f == "csv")
-                {
-                    format = OutputFormat::CSV;
-                }
-                else if (f == "mat")
-                {
-                    format = OutputFormat::MAT;
-                }
+                if (f == "csv") format = OutputFormat::CSV;
+                else if (f == "mat") format = OutputFormat::MAT;
+                else if (f == "both") format = OutputFormat::BOTH;
                 else
                 {
-                    std::cerr << "Unknown format: " << f << "\n";
+                    std::cerr << "Unknown format: " << f << " (expected mat|csv|both)\n";
                     return 1;
                 }
             }
