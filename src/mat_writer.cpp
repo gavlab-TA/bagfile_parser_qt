@@ -12,7 +12,9 @@ static matvar_t* createStructVar(const char* name, int rank, const size_t* dims)
 #if defined(MATIO_RELEASE_LEVEL) && MATIO_RELEASE_LEVEL >= 28
     return Mat_VarCreateStruct2(name, rank, dims, nullptr);
 #else
-    return Mat_VarCreateStruct(name, rank, dims, nullptr, 0);
+    // The pre-1.5.28 API takes a non-const size_t*, so copy into a local buffer.
+    std::vector<size_t> mutableDims(dims, dims + rank);
+    return Mat_VarCreateStruct(name, rank, mutableDims.data(), nullptr, 0);
 #endif
 }
 

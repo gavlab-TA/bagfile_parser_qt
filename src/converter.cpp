@@ -24,6 +24,7 @@
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <functional>
 #include <map>
 #include <mutex>
@@ -49,6 +50,102 @@
 #endif
 
 namespace fs = std::filesystem;
+
+// MATLAB helper dropped next to the .mat output when a topic is split across
+// parts. Loads <name>_000.mat, <name>_001.mat, ... and concatenates them back
+// into a single struct in time order. NaN-pads ragged dynamic-array widths so
+// parts with different max widths still stitch cleanly.
+static const char* kStitchHelperM =
+R"MATLAB(function data = bag_to_mat_load(basename)
+%BAG_TO_MAT_LOAD  Load and stitch split .mat parts written by bagfile_parser_qt.
+%   Large topics are exported as <name>_000.mat, <name>_001.mat, ... where each
+%   part holds the same struct variable for a slice of messages in time order.
+%
+%   data = bag_to_mat_load('mat/can_diag_rx') concatenates every part back into
+%   one struct. Pass the base name (no suffix) or the path to any single part.
+    [d, f] = fileparts(basename);
+    f = regexprep(f, '_\d+$', '');           % strip a trailing _NNN if present
+    if isempty(d); d = '.'; end
+    L = dir(fullfile(d, [f '_*.mat']));
+    names = sort({L.name});
+    if isempty(names)
+        error('bag_to_mat_load:noParts', 'No parts found for %s', fullfile(d, f));
+    end
+    data = [];
+    for k = 1:numel(names)
+        S = load(fullfile(d, names{k}));
+        fn = fieldnames(S);
+        part = S.(fn{1});
+        if isempty(data)
+            data = part;
+        else
+            data = local_cat(data, part, numel(part.t));
+        end
+    end
+end
+
+function a = local_cat(a, b, n)
+    fns = fieldnames(b);
+    for i = 1:numel(fns)
+        fn = fns{i};
+        bv = b.(fn); av = a.(fn);
+        if isstruct(bv)
+            a.(fn) = local_cat(av, bv, n);
+        elseif iscell(bv)
+            a.(fn) = [av, bv];               % [1 x n] cell -> horzcat
+        elseif size(bv,1) == n && size(bv,2) ~= n
+            wa = size(av,2); wb = size(bv,2); % [n x W] -> vertcat (NaN-pad width)
+            if wa ~= wb
+                w = max(wa, wb);
+                av(:, end+1:w) = NaN;
+                bv(:, end+1:w) = NaN;
+            end
+            a.(fn) = [av; bv];
+        else
+            a.(fn) = [av, bv];               % [1 x n] row -> horzcat
+        end
+    end
+end
+)MATLAB";
+
+// Insert a zero-padded _NNN before the extension: foo.mat -> foo_003.mat.
+static std::string chunkPath(const std::string& base, size_t idx, int width)
+{
+    fs::path p(base);
+    std::ostringstream num;
+    num << std::setw(width) << std::setfill('0') << idx;
+    return (p.parent_path() / (p.stem().string() + "_" + num.str() + p.extension().string())).string();
+}
+
+// Remove a topic's outputs from a prior run before writing fresh ones: the
+// single-file form (foo.mat) and every numbered part (foo_<digits>.mat). Without
+// this, a run that produces fewer parts than last time leaves orphaned parts that
+// bag_to_mat_load would stitch in. Only this topic's files are touched.
+static void purgeExisting(const std::string& base_path)
+{
+    if (base_path.empty()) return;
+    fs::path p(base_path);
+    std::error_code ec;
+    fs::remove(p, ec);
+
+    fs::path dir = p.parent_path();
+    if (!fs::is_directory(dir, ec)) return;
+    std::string ext = p.extension().string();
+    std::string prefix = p.stem().string() + "_";
+    for (const fs::directory_entry& e : fs::directory_iterator(dir, ec))
+    {
+        const fs::path& fp = e.path();
+        if (fp.extension().string() != ext) continue;
+        std::string stem = fp.stem().string();
+        if (stem.size() <= prefix.size() || stem.compare(0, prefix.size(), prefix) != 0) continue;
+        bool all_digits = true;
+        for (size_t i = prefix.size(); i < stem.size(); i++)
+        {
+            if (stem[i] < '0' || stem[i] > '9') { all_digits = false; break; }
+        }
+        if (all_digits) fs::remove(fp, ec);
+    }
+}
 
 static std::vector<std::string> findMcapFiles(const std::string& path)
 {
@@ -357,7 +454,9 @@ static void processLoadedTopic(TopicData& info,
                                 const std::string& mat_var_name,
                                 const ConvertOptions& opts,
                                 const ConvertCallbacks& cbs,
-                                std::mutex* log_mutex)
+                                std::mutex* log_mutex,
+                                size_t mem_budget,
+                                std::once_flag* stitch_once)
 {
     size_t n = info.count();
     if (n == 0) return;
@@ -414,42 +513,110 @@ static void processLoadedTopic(TopicData& info,
         }
     }
 
-    CollectedData collected;
-    allocateCollectors(collected, adjusted, n);
-    for (size_t i = 0; i < n; i++)
+    // Decode + write in chunks bounded by the memory budget. A single huge topic
+    // (e.g. 100M CAN frames -> ~12 GB of decoded doubles, doubled again by matio)
+    // would otherwise OOM. Each part peaks at ~3x its decoded doubles (decode
+    // buffer + matio's internal copy + zlib scratch), so size parts to budget/3.
+    size_t per_msg = std::max<size_t>(estimateFootprint(adjusted, 1), sizeof(double));
+    size_t budget = mem_budget > 0 ? mem_budget : static_cast<size_t>(1024) * 1024 * 1024;
+    size_t chunk_n = budget / (per_msg * 3);
+    if (chunk_n == 0) chunk_n = 1;
+    if (chunk_n > n) chunk_n = n;
+    size_t num_chunks = (n + chunk_n - 1) / chunk_n;
+
+    int width = 3;
+    for (size_t v = num_chunks - 1; v >= 1000; v /= 10) width++;
+
+    std::vector<double> timestamps = std::move(info.timestamps);
+
+    // Clear this topic's outputs from any prior run so stale parts can't linger.
+    purgeExisting(mat_path);
+    purgeExisting(csv_path);
+
+    if (num_chunks > 1)
     {
-        if (cbs.cancel && cbs.cancel->load()) return;
-        try
+        std::ostringstream os;
+        os << info.name << ": " << n << " msgs exceed the per-file budget — splitting into "
+           << num_chunks << " parts";
+        if (!mat_path.empty())
         {
-            CdrReader reader(info.blob.data() + info.offsets[i], info.lengths[i]);
-            fillMessage(collected, adjusted, reader, i);
+            os << "; stitch in MATLAB with bag_to_mat_load('"
+               << fs::path(mat_path).stem().string() << "')";
         }
-        catch (const std::exception& e)
+        if (log_mutex)
         {
-            std::ostringstream os;
-            os << "deserialize failed at " << info.name << " #" << i << ": " << e.what();
-            if (log_mutex)
+            std::lock_guard<std::mutex> lock(*log_mutex);
+            logMessage(cbs, os.str());
+        }
+        else
+        {
+            logMessage(cbs, os.str());
+        }
+
+        if (!mat_path.empty() && stitch_once)
+        {
+            std::call_once(*stitch_once, [&]()
             {
-                std::lock_guard<std::mutex> lock(*log_mutex);
-                logMessage(cbs, os.str());
-            }
-            else
-            {
-                logMessage(cbs, os.str());
-            }
+                fs::path helper = fs::path(mat_path).parent_path() / "bag_to_mat_load.m";
+                std::ofstream o(helper);
+                if (o) o << kStitchHelperM;
+            });
         }
     }
 
-    std::vector<double> timestamps = std::move(info.timestamps);
-    info.release();
+    for (size_t c = 0; c < num_chunks; c++)
+    {
+        if (cbs.cancel && cbs.cancel->load()) return;
+        size_t start = c * chunk_n;
+        size_t stop = std::min(start + chunk_n, n);
+        size_t len = stop - start;
 
-    if (!csv_path.empty()) writeCsv(csv_path, collected, timestamps);
-    if (!mat_path.empty()) writeMat(mat_path, mat_var_name, collected, timestamps);
+        CollectedData collected;
+        allocateCollectors(collected, adjusted, len);
+        for (size_t i = start; i < stop; i++)
+        {
+            if (cbs.cancel && cbs.cancel->load()) return;
+            try
+            {
+                CdrReader reader(info.blob.data() + info.offsets[i], info.lengths[i]);
+                fillMessage(collected, adjusted, reader, i - start);
+            }
+            catch (const std::exception& e)
+            {
+                std::ostringstream os;
+                os << "deserialize failed at " << info.name << " #" << i << ": " << e.what();
+                if (log_mutex)
+                {
+                    std::lock_guard<std::mutex> lock(*log_mutex);
+                    logMessage(cbs, os.str());
+                }
+                else
+                {
+                    logMessage(cbs, os.str());
+                }
+            }
+        }
+
+        if (num_chunks > 1)
+        {
+            std::vector<double> chunk_ts(timestamps.begin() + start, timestamps.begin() + stop);
+            if (!csv_path.empty()) writeCsv(chunkPath(csv_path, c, width), collected, chunk_ts);
+            if (!mat_path.empty()) writeMat(chunkPath(mat_path, c, width), mat_var_name, collected, chunk_ts);
+        }
+        else
+        {
+            if (!csv_path.empty()) writeCsv(csv_path, collected, timestamps);
+            if (!mat_path.empty()) writeMat(mat_path, mat_var_name, collected, timestamps);
+        }
+    }
+    info.release();
 }
 
 // === In-memory mode: read all messages, parallel write ===
 
-static void runInMemory(const std::vector<std::string>& mcap_files,
+// Returns false if the resident bag data blew past the RAM ceiling mid-read and
+// the caller should fall back to binary-spill mode; true otherwise (incl. cancel).
+static bool runInMemory(const std::vector<std::string>& mcap_files,
                          const ConvertOptions& opts,
                          const ConvertCallbacks& cbs,
                          const fs::path& csv_dir,   // empty path = skip csv
@@ -462,9 +629,16 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
     std::set<std::string> filter(opts.topics.begin(), opts.topics.end());
     size_t msgs_seen = 0;
 
+    // Live safety net: if resident raw blobs cross this ceiling, the up-front
+    // estimate was wrong — bail and let the caller re-read in binary-spill mode.
+    // availableRamBytes() is half of physical RAM, leaving the rest for the
+    // (chunked) decode phase that runs after the read completes, plus the OS.
+    const size_t ram_ceiling = availableRamBytes();
+    size_t resident = 0;
+
     for (const std::string& mcap_file : mcap_files)
     {
-        if (cbs.cancel && cbs.cancel->load()) return;
+        if (cbs.cancel && cbs.cancel->load()) return true;
 
         mcap::McapReader reader;
         mcap::Status status = reader.open(mcap_file);
@@ -513,7 +687,7 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
         mcap::LinearMessageView view = reader.readMessages(on_problem, ro);
         for (mcap::LinearMessageView::Iterator it = view.begin(); it != view.end(); ++it)
         {
-            if (cbs.cancel && cbs.cancel->load()) { reader.close(); return; }
+            if (cbs.cancel && cbs.cancel->load()) { reader.close(); return true; }
 
             if (++msgs_seen % 50000 == 0)
             {
@@ -556,6 +730,7 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
             if (opts.skip_large_topics && large_msg_bytes > 0
                 && it->message.dataSize > large_msg_bytes)
             {
+                resident -= info.blob.size();
                 info.large_skip = true;
                 info.releaseAll();
                 if (skipped_topics.emplace(channel.topic, msgtype).second)
@@ -572,12 +747,24 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
             double ts = static_cast<double>(it->message.logTime) * 1e-9;
             const uint8_t* msg_bytes = reinterpret_cast<const uint8_t*>(it->message.data);
             info.append(ts, msg_bytes, it->message.dataSize);
+            resident += it->message.dataSize;
+
+            if (ram_ceiling && resident > ram_ceiling)
+            {
+                reader.close();
+                std::ostringstream os;
+                os << "Resident bag data (" << (resident / (1024 * 1024))
+                   << " MiB) exceeded the RAM budget (" << (ram_ceiling / (1024 * 1024))
+                   << " MiB) mid-read — switching to binary-spill mode.";
+                logMessage(cbs, os.str());
+                return false;
+            }
         }
         reader.close();
     }
 
-    if (cbs.cancel && cbs.cancel->load()) return;
-    if (topics.empty()) { logMessage(cbs, "No messages found."); return; }
+    if (cbs.cancel && cbs.cancel->load()) return true;
+    if (topics.empty()) { logMessage(cbs, "No messages found."); return true; }
 
     std::chrono::steady_clock::time_point t_read = std::chrono::steady_clock::now();
     double read_sec = std::chrono::duration<double>(t_read - t_start).count();
@@ -642,6 +829,7 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
     std::mutex log_mutex;
     std::mutex budget_mutex;
     std::condition_variable budget_cv;
+    std::once_flag stitch_once;
     size_t in_flight_bytes = 0;
 
     std::function<void()> worker = [&]()
@@ -688,7 +876,7 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
             } budget_guard{budget_mutex, budget_cv, in_flight_bytes, topic_cost};
 
             processLoadedTopic(info, w.csv_path, w.mat_path, w.mat_name,
-                                opts, cbs, &log_mutex);
+                                opts, cbs, &log_mutex, mem_budget, &stitch_once);
 
 #if defined(__GLIBC__)
             malloc_trim(0);
@@ -717,6 +905,7 @@ static void runInMemory(const std::vector<std::string>& mcap_files,
     pool.reserve(n_threads);
     for (int i = 0; i < n_threads; i++) pool.emplace_back(worker);
     for (std::thread& t : pool) t.join();
+    return true;
 }
 
 // === Binary spill mode: stream CDR records to per-topic .bin files, then
@@ -968,6 +1157,7 @@ static void runBinarySpill(const std::vector<std::string>& mcap_files,
     std::mutex log_mutex;
     std::mutex budget_mutex;
     std::condition_variable budget_cv;
+    std::once_flag stitch_once;
     size_t in_flight_bytes = 0;
 
     std::function<void()> worker = [&]()
@@ -1016,7 +1206,7 @@ static void runBinarySpill(const std::vector<std::string>& mcap_files,
             loadBinSpill(w.bin_path, info);
 
             processLoadedTopic(info, w.csv_path, w.mat_path, w.mat_name,
-                                opts, cbs, &log_mutex);
+                                opts, cbs, &log_mutex, mem_budget, &stitch_once);
 
             std::error_code ec; fs::remove(w.bin_path, ec);
 #if defined(__GLIBC__)
@@ -1068,12 +1258,26 @@ void convert(const ConvertOptions& opts, const ConvertCallbacks& cbs)
     size_t bag_total = 0;
     for (const TopicSummary& t : topic_summaries) bag_total += t.count;
 
-    // RAM-fit estimate.
+    // RAM-fit estimate. When the size can't be estimated (missing MCAP summaries)
+    // or RAM can't be read, fall back to binary-spill mode — it is always safe,
+    // and a wrong "fits" guess OOM-kills the read phase. The in-memory path also
+    // carries a live resident-bytes guard that bails to spill if this is too low.
     std::set<std::string> filter_set(opts.topics.begin(), opts.topics.end());
     size_t estimated = estimateKeptBytes(mcap_files, filter_set, opts.skip_large_topics);
     size_t available = availableRamBytes();
-    bool fits = true;
-    if (estimated > 0 && available > 0)
+    bool fits;
+    if (available == 0)
+    {
+        fits = false;
+        logMessage(cbs, "Could not read system RAM — using binary-spill mode (safe).");
+    }
+    else if (estimated == 0)
+    {
+        fits = false;
+        logMessage(cbs, "Bag size could not be estimated (missing MCAP summary) — "
+                        "using binary-spill mode (safe).");
+    }
+    else
     {
         // Phase-1 blob (~estimated) + decoded doubles + scratch ≈ 3x peak.
         fits = (estimated * 3 <= available);
@@ -1106,11 +1310,13 @@ void convert(const ConvertOptions& opts, const ConvertCallbacks& cbs)
     if (want_csv) fs::create_directories(csv_dir);
     if (want_mat) fs::create_directories(mat_dir);
 
+    bool spill = !fits;
     if (fits)
     {
-        runInMemory(mcap_files, opts, cbs, csv_dir, mat_dir, bag_total, t_start);
+        // Falls through to spill mode if the live guard trips mid-read.
+        spill = !runInMemory(mcap_files, opts, cbs, csv_dir, mat_dir, bag_total, t_start);
     }
-    else
+    if (spill)
     {
         runBinarySpill(mcap_files, opts, cbs, csv_dir, mat_dir, output_dir, bag_total);
     }
