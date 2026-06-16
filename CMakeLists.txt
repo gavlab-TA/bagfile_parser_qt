@@ -68,16 +68,20 @@ target_link_libraries(bagfile_parser_qt PRIVATE
     Threads::Threads
 )
 
-# Link lz4
+# Link lz4. If absent, tell MCAP not to #include <lz4frame.h> (it does so
+# unconditionally otherwise), so the build still works without LZ4 support.
 if(lz4_FOUND)
     target_link_libraries(bagfile_parser_qt PRIVATE lz4::lz4)
     target_compile_definitions(bagfile_parser_qt PRIVATE HAS_LZ4)
 elseif(TARGET PkgConfig::LZ4)
     target_link_libraries(bagfile_parser_qt PRIVATE PkgConfig::LZ4)
     target_compile_definitions(bagfile_parser_qt PRIVATE HAS_LZ4)
+else()
+    target_compile_definitions(bagfile_parser_qt PRIVATE MCAP_COMPRESSION_NO_LZ4)
 endif()
 
-# Link zstd
+# Link zstd. If absent, tell MCAP not to #include <zstd.h> (it does so
+# unconditionally otherwise), so the build still works without Zstd support.
 if(TARGET zstd::libzstd_shared)
     target_link_libraries(bagfile_parser_qt PRIVATE zstd::libzstd_shared)
     target_compile_definitions(bagfile_parser_qt PRIVATE HAS_ZSTD)
@@ -87,6 +91,8 @@ elseif(TARGET zstd::libzstd_static)
 elseif(TARGET PkgConfig::ZSTD)
     target_link_libraries(bagfile_parser_qt PRIVATE PkgConfig::ZSTD)
     target_compile_definitions(bagfile_parser_qt PRIVATE HAS_ZSTD)
+else()
+    target_compile_definitions(bagfile_parser_qt PRIVATE MCAP_COMPRESSION_NO_ZSTD)
 endif()
 
 install(TARGETS bagfile_parser_qt DESTINATION bin)
