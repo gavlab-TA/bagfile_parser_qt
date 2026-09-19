@@ -20,7 +20,7 @@ static void printUsage()
         "CLI options:\n"
         "  -l, --list-topics         List topics and exit\n"
         "  -t, --topics T1 T2 ...    Topics to convert (default: all)\n"
-        "  -o, --output DIR          Output directory (default: cwd)\n"
+        "  -o, --output DIR          Output directory (default: bag folder)\n"
         "  -j, --threads N           Worker threads (default: hw cores)\n"
         "  -f, --format mat|csv|both Output format (default: mat)\n"
         "  --byte-max N              Max dynamic byte-array length to keep (default: 256)\n"

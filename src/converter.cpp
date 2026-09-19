@@ -1288,7 +1288,14 @@ void convert(const ConvertOptions& opts, const ConvertCallbacks& cbs)
         logMessage(cbs, os.str());
     }
 
-    fs::path output_dir = opts.output_dir.empty() ? fs::current_path() : fs::path(opts.output_dir);
+    // Default output: the bag folder (the directory itself, or a file's parent).
+    fs::path output_dir = fs::path(opts.output_dir);
+    if (opts.output_dir.empty())
+    {
+        fs::path bag(opts.bag_path);
+        output_dir = fs::is_directory(bag) ? bag : bag.parent_path();
+        if (output_dir.empty()) output_dir = fs::current_path();
+    }
     fs::create_directories(output_dir);
 
     bool want_csv = (opts.format == OutputFormat::CSV || opts.format == OutputFormat::BOTH);

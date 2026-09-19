@@ -177,13 +177,15 @@ Windows-style paths for bags/output).
 
 The bag path can be a single `.mcap` file or a directory of split `.mcap`
 files (they are read in name order as one logical bag). Outputs land in
-`<output>/mat/` and/or `<output>/csv/` depending on `--format`.
+`<output>/mat/` and/or `<output>/csv/` depending on `--format`. Without `-o`,
+`<output>` is the bag folder: the directory itself, or the folder containing a
+single `.mcap` file.
 
 ```bash
 # List a bag's topics, message types, and message counts, then exit
 ./bagfile_parser_qt /path/to/bag -l
 
-# Convert every topic to .mat in the current directory
+# Convert every topic to .mat inside the bag folder (/path/to/bag/mat/)
 ./bagfile_parser_qt /path/to/bag
 
 # Convert every topic to .mat under a chosen output directory
@@ -211,7 +213,7 @@ files (they are read in name order as one logical bag). Outputs land in
 |------|-------------|
 | `-l, --list-topics` | List topics and exit |
 | `-t, --topics T1 T2 ...` | Topics to convert (default: all) |
-| `-o, --output DIR` | Output directory (default: cwd) |
+| `-o, --output DIR` | Output directory (default: bag folder) |
 | `-j, --threads N` | Worker threads (default: hw cores) |
 | `-f, --format mat\|csv\|both` | Output format (default: mat) |
 | `--byte-max N` | Max dynamic byte-array length to keep (default: 256) |
