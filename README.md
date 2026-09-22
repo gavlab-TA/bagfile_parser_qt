@@ -4,144 +4,162 @@ MCAP rosbag-to-MAT/CSV converter with Qt GUI and CLI.
 
 Reads ROS 2 MCAP bag files directly using a runtime schema-driven CDR walker — no message-package dependency, no codegen, no colcon.
 
-## Dependencies
+## Installing
 
-- CMake >= 3.16
-- Qt5 or Qt6 (Core, Widgets)
-- libmatio
-- liblz4 (optional, for LZ4-compressed MCAP chunks)
-- libzstd (optional, for Zstd-compressed MCAP chunks)
+Grab the package for your platform from the
+[Releases page](https://github.com/gavlab-TA/bagfile_parser_qt/releases), or
+build one yourself with a single command (see [Building a package](#building-a-package)).
 
-### Installing dependencies
+| Platform | Package | Install |
+|----------|---------|---------|
+| Windows 10/11 (x64) | `bagfile_parser_qt-<ver>-windows-x64.exe` | Run it. Adds a Start Menu entry and can put the CLI on your `PATH`. |
+| Windows, no install | `bagfile_parser_qt-<ver>-windows-x64.zip` | Unzip anywhere and run `bagfile_parser_qt.exe`. |
+| Ubuntu / Debian | `bagfile-parser-qt_<ver>_<arch>.deb` | `sudo apt install ./bagfile-parser-qt_<ver>_<arch>.deb` |
+| macOS | `bagfile_parser_qt-<ver>-macos-<arch>.dmg` | Open it, drag the app to Applications. |
 
-**macOS (Homebrew):**
+The Windows and macOS packages carry their own Qt, so nothing needs to be
+preinstalled. The `.deb` depends on your distribution's Qt, matio, lz4 and zstd
+packages, which `apt` pulls in automatically.
+
+### If there's no package for your system
+
+The `.deb` is architecture-specific, and releases only cover the architectures
+we build on. On anything else — a different CPU architecture, or a distribution
+that isn't Debian-based — build your own package; it takes one command and
+produces a `.deb` matched to your machine:
 
 ```bash
-brew install cmake qt libmatio lz4 zstd
+git clone https://github.com/gavlab-TA/bagfile_parser_qt
+cd bagfile_parser_qt
+./scripts/package.sh
+sudo apt install ./dist/bagfile-parser-qt_*.deb
 ```
 
-**Ubuntu/Debian:**
+### Unsigned binaries
+
+None of the packages are code-signed, so first launch needs one extra step:
+
+- **Windows** — SmartScreen shows *"Windows protected your PC"*. Click
+  **More info → Run anyway**.
+- **macOS** — Gatekeeper refuses a double-click. **Right-click the app → Open**,
+  then confirm; or allow it under *System Settings → Privacy & Security*.
+- **Linux** — nothing to do.
+
+## Building a package
+
+`scripts/package.sh` (Linux, macOS) and `scripts/package.ps1` (Windows) each
+install the build dependencies, build the project, and write a redistributable
+package into `dist/`. That directory is gitignored — packages are attached to
+GitHub Releases, never committed, so the repository never carries a binary that
+changes on every update.
+
+**Linux** — produces a `.deb` (plus a `.tar.gz`) for the architecture you run it
+on. `Depends:` is computed from the built binary with `dpkg-shlibdeps`, so the
+package requests the right Qt/matio/lz4/zstd for your distribution release.
 
 ```bash
-sudo apt install cmake qtbase5-dev libmatio-dev liblz4-dev libzstd-dev
+./scripts/package.sh
 ```
 
-**Windows:** see the fresh-machine walkthrough below.
-
-## Building (macOS / Linux)
+**macOS** — produces a drag-to-install `.dmg`. `macdeployqt` copies Qt into the
+bundle, so it runs on a Mac with no Qt installed. The `.dmg` is specific to the
+architecture you build on (Apple silicon or Intel).
 
 ```bash
-mkdir build && cd build
-cmake ..
-make -j$(nproc)
+./scripts/package.sh      # needs Homebrew for the dependencies
+```
+
+**Windows** — produces an NSIS installer and a portable `.zip`. Dependencies come
+from vcpkg and are linked statically, so the payload is the `.exe` plus the Qt
+DLLs that `windeployqt` bundles.
+
+```powershell
+.\scripts\package.ps1
+```
+
+It auto-detects Qt under `C:\Qt` and bootstraps vcpkg into `C:\vcpkg` if it
+isn't there. Point it elsewhere if needed:
+
+```powershell
+.\scripts\package.ps1 -QtDir C:\Qt\6.11.1\mingw_64 -VcpkgRoot D:\vcpkg
+```
+
+Both scripts take `--no-deps` / `-SkipDeps` to skip the package-manager step, and
+`-j N` / `-Jobs N` to limit parallelism. The first Windows run builds matio and
+HDF5 from source, which takes several minutes; later runs reuse vcpkg's cache.
+
+### Prerequisites for building
+
+The scripts install what they can, but these have to be present first:
+
+- **Linux** — nothing; `package.sh` installs the compiler, CMake, Qt and the
+  libraries through `apt`/`dnf`/`pacman`/`zypper`.
+- **macOS** — [Homebrew](https://brew.sh) and the Xcode command line tools
+  (`xcode-select --install`).
+- **Windows** — [CMake](https://cmake.org/download/) (tick *Add CMake to the
+  system PATH*), [NSIS](https://nsis.sourceforge.io/Download)
+  (`winget install NSIS.NSIS`), and Qt 6 from the
+  [official online installer](https://www.qt.io/download-qt-installer) —
+  the default **MinGW 64-bit** desktop component also brings the GCC toolchain
+  and Ninja. Install Qt with the official installer rather than vcpkg: vcpkg
+  compiles Qt from source, which is far slower than downloading a prebuilt one.
+  Pick one toolchain and stay on it — a MinGW Qt cannot be linked against an
+  MSVC build.
+
+Releases are built by [`.github/workflows/package.yml`](.github/workflows/package.yml),
+which runs these same scripts on Linux, macOS (Intel and Apple silicon) and
+Windows, verifies each artifact installs and runs, and attaches them to the
+GitHub Release for a `v*` tag.
+
+## Building from source (developers)
+
+To work on the code, or to install straight into a prefix without going through
+a package:
+
+```bash
+./scripts/install.sh                    # builds and installs into /usr/local
+./scripts/install.sh --prefix ~/.local  # no sudo needed
+./scripts/install.sh --uninstall        # removes what it installed
+```
+
+It installs the dependencies, builds, installs the binary, and registers a
+desktop entry (Linux) or links the app into `/Applications` (macOS).
+
+Or drive CMake yourself:
+
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build -j
 ```
 
 The binary is `build/bagfile_parser_qt`.
 
-## Building on Windows (fresh machine)
+### Dependencies
 
-These steps take a clean Windows 10/11 box to a command-line build. The whole
-toolchain plus libraries uses roughly 12–18 GB of disk.
+- CMake >= 3.16
+- A C++17 compiler
+- Qt 5 or Qt 6 (Core, Widgets)
+- libmatio
+- liblz4 (optional, for LZ4-compressed MCAP chunks)
+- libzstd (optional, for Zstd-compressed MCAP chunks)
 
-This uses the **MinGW** toolchain that ships with Qt (GCC + Ninja), *not* MSVC.
-The Qt online installer's default desktop kit is MinGW, so you don't need
-Visual Studio at all — and everything (Qt, the GCC compiler, Ninja) comes from
-the one Qt install. Pick one toolchain and stay on it: do not mix MinGW Qt with
-an MSVC build (or vice-versa) — the ABIs are incompatible and linking will fail.
+MCAP itself is vendored in `external/mcap/`, and lz4/zstd are genuinely
+optional: without them the build simply drops support for those chunk
+compressions.
 
-Paths below assume Qt **6.11.1** with the MinGW kit; adjust the version numbers
-to match what you installed.
+### Troubleshooting a Windows build
 
-### 1. Install the tools
+**Antivirus.** Norton and friends may quarantine freshly-compiled, unsigned
+MinGW binaries — both vcpkg's build output and this project's `.exe`. If a build
+mysteriously loses files, add folder exclusions for `C:\vcpkg` and the project
+directory (Norton: *Settings → Antivirus → Scans and Risks → Items to Exclude
+from Scans*, **and** the separate *Auto-Protect, SONAR and Download Intelligence*
+list), then restore anything already quarantined.
 
-1. **Git** — https://git-scm.com/download/win (skip if `git --version` works).
-2. **CMake** (≥ 3.16) — https://cmake.org/download/ (the Windows x64 installer).
-   During install, choose *"Add CMake to the system PATH"*. Skip if
-   `cmake --version` already works.
-3. **Qt 6 (MinGW kit)** — run the Qt Online Installer from
-   https://www.qt.io/download-qt-installer (a free Qt account is required).
-   Under the latest Qt 6.x, the default **"MinGW … 64-bit"** desktop component
-   is what you want; it also installs the matching GCC toolchain and Ninja under
-   `C:\Qt\Tools\`. This is usually the option preselected by the installer.
-   > Install Qt with the *official installer*, not vcpkg — vcpkg compiles Qt
-   > from source, which takes hours and many GB.
-4. **vcpkg** (provides matio, lz4, zstd) — in PowerShell:
-
-   ```powershell
-   git clone https://github.com/microsoft/vcpkg C:\vcpkg
-   C:\vcpkg\bootstrap-vcpkg.bat
-   ```
-
-### 2. Install the C++ libraries with vcpkg
-
-Build matio, lz4, and zstd for MinGW. Put Qt's GCC on `PATH` first so vcpkg
-builds them with the same compiler you'll use for the app:
-
-```powershell
-$env:PATH = "C:\Qt\Tools\mingw1310_64\bin;$env:PATH"
-C:\vcpkg\vcpkg install lz4 zstd matio --triplet x64-mingw-dynamic --host-triplet x64-mingw-dynamic
-```
-
-This compiles HDF5 + matio from source, so expect it to take several minutes.
-
-> **Behind a network that blocks TLS revocation checks?** See
-> [Network / TLS note](#network--tls-note) below — vcpkg's downloads will fail
-> with `CRYPT_E_NO_REVOCATION_CHECK` and you'll need the asset-cache workaround.
-
-### 3. Configure and build
-
-Run from the project root in PowerShell. Adjust the Qt version/path if needed:
-
-```powershell
-$env:PATH = "C:\Qt\Tools\mingw1310_64\bin;C:\Qt\Tools\Ninja;$env:PATH"
-
-cmake -S . -B build -G Ninja `
-  -DCMAKE_BUILD_TYPE=Release `
-  -DCMAKE_CXX_COMPILER=g++ `
-  -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake `
-  -DVCPKG_TARGET_TRIPLET=x64-mingw-dynamic `
-  -DCMAKE_PREFIX_PATH=C:\Qt\6.11.1\mingw_64
-
-cmake --build build
-```
-
-The binary is `build\bagfile_parser_qt.exe`. The vcpkg toolchain automatically
-copies the matio/hdf5/lz4/zstd/zlib DLLs next to it during the build.
-
-### 4. Bundle the Qt DLLs (needed to run it)
-
-The vcpkg library DLLs are already deployed (above), but the executable still
-needs the Qt libraries, the MinGW runtime, and Qt's platform plugin. Run
-`windeployqt` once to copy them in:
-
-```powershell
-C:\Qt\6.11.1\mingw_64\bin\windeployqt.exe build\bagfile_parser_qt.exe --no-translations
-```
-
-You can now run `build\bagfile_parser_qt.exe` (see Usage below).
-
-### Antivirus note
-
-Antivirus software (e.g. Norton) may quarantine freshly-compiled, unsigned
-MinGW binaries — both vcpkg's build outputs and this project's `.exe`. If a
-build mysteriously loses files or the `.exe` vanishes after linking, add
-**folder exclusions** for `C:\vcpkg` and your project directory (in Norton:
-*Settings → Antivirus → Scans and Risks → Items to Exclude from Scans* **and**
-*…from Auto-Protect, SONAR and Download Intelligence Detection*). Restore any
-already-quarantined items from the AV's quarantine/history view.
-
-### Network / TLS note
-
-On networks that perform TLS inspection (corporate proxies/AV) or otherwise
-can't reach the certificate-revocation servers, vcpkg's downloads fail with:
-
-```
-curl: (35) schannel: ... CRYPT_E_NO_REVOCATION_CHECK
-error: curl operation failed with error code 35 (SSL connect error).
-```
-
-The robust workaround is to route vcpkg's downloads through a small fetch script
-that passes curl's `--ssl-no-revoke`. Save this as `vcpkg-fetch.cmd`:
+**TLS interception.** On networks that inspect TLS or can't reach
+certificate-revocation servers, vcpkg's downloads fail with
+`CRYPT_E_NO_REVOCATION_CHECK` / `curl: (35)`. Route its downloads through a
+fetch script that passes `--ssl-no-revoke`. Save this as `vcpkg-fetch.cmd`:
 
 ```bat
 @echo off
@@ -149,23 +167,24 @@ rem --retry-all-errors also rides through transient TLS handshake resets
 curl.exe -L --ssl-no-revoke --fail --retry 5 --retry-all-errors --retry-delay 3 --connect-timeout 30 --create-dirs -o %2 %1
 ```
 
-Then set `X_VCPKG_ASSET_SOURCES` before the `vcpkg install` so every download
-goes through it:
+then point vcpkg at it before running the packaging script:
 
 ```powershell
 $env:X_VCPKG_ASSET_SOURCES = "x-script,C:\path\to\vcpkg-fetch.cmd {url} {dst};x-block-origin"
-C:\vcpkg\vcpkg install lz4 zstd matio --triplet x64-mingw-dynamic --host-triplet x64-mingw-dynamic
+.\scripts\package.ps1
 ```
 
-`--ssl-no-revoke` disables *revocation* checking only (not certificate
-validation), and only for these downloads. If you can instead get your network
-to reach the revocation endpoints (or have IT whitelist them), prefer that.
+`--ssl-no-revoke` disables *revocation* checking only, not certificate
+validation, and only for these downloads. If your network can be made to reach
+the revocation endpoints instead, prefer that.
 
 ## Usage
 
-The examples below use the Unix-style `./bagfile_parser_qt`. On Windows the
-binary is `build\bagfile_parser_qt.exe` — substitute that path (and use
-Windows-style paths for bags/output).
+After installing, the command is `bagfile_parser_qt` on every platform (on
+Windows, if you didn't let the installer add it to `PATH`, use the full path to
+`bagfile_parser_qt.exe`). The examples below use the Unix-style
+`./bagfile_parser_qt`; substitute Windows-style paths for bags and output as
+needed.
 
 ### GUI
 

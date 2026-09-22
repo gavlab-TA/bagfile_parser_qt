@@ -1,5 +1,27 @@
+# Build trees
 build/
+build-*/
+out/
+
+# Packaging output - installers and archives are attached to GitHub Releases,
+# never committed, so the repo never carries a binary that changes every update.
+dist/
+*.exe
+*.msi
+*.dmg
+*.deb
+*.rpm
+*.AppImage
+*.tar.gz
+*.zip
+
+# vcpkg manifest-mode working dirs
+vcpkg_installed/
+.vcpkg-root
+
+# Editor / tooling
 *.user
 .vscode/
 .cache/
 compile_commands.json
+.DS_Store

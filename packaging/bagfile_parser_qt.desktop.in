@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Bagfile Parser
+GenericName=MCAP Bag Converter
+Comment=Convert ROS 2 MCAP bag files to MAT and CSV
+Exec=@BPQ_DESKTOP_EXEC@ %f
+Icon=@BPQ_DESKTOP_ICON@
+Terminal=false
+Categories=Science;Engineering;
+Keywords=ROS;ROS2;MCAP;rosbag;MAT;CSV;converter;
+StartupWMClass=bagfile_parser_qt

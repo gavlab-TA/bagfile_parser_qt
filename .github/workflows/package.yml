@@ -1,0 +1,178 @@
+name: Package
+
+# Builds the installable artifacts for all three platforms. Nothing is ever
+# committed: artifacts are attached to the workflow run, and to a GitHub
+# Release when the trigger is a version tag.
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    name: Linux (.deb)
+    runs-on: ubuntu-22.04   # oldest supported glibc/Qt, so the .deb installs widely
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build package
+        env:
+          BPQ_VERSION: ${{ steps.ver.outputs.version }}
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          ./scripts/package.sh
+        # package.sh installs its own build dependencies via apt.
+
+      - name: Verify the package
+        run: |
+          set -euo pipefail
+          deb=$(ls dist/*.deb)
+          echo "::group::metadata"; dpkg-deb -I "$deb"; echo "::endgroup::"
+          echo "::group::contents"; dpkg-deb -c "$deb"; echo "::endgroup::"
+          # Install it for real and confirm the binary runs.
+          sudo apt-get update
+          sudo apt-get install -y "./$deb"
+          bagfile_parser_qt --help
+          desktop-file-validate /usr/share/applications/bagfile_parser_qt.desktop
+          sudo apt-get remove -y bagfile-parser-qt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: dist/*
+
+  macos:
+    name: macOS (.dmg)
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14   # Apple silicon
+            arch: arm64
+          - runner: macos-13   # Intel
+            arch: x86_64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build package
+        env:
+          BPQ_VERSION: ${{ steps.ver.outputs.version }}
+        run: ./scripts/package.sh
+
+      - name: Verify the disk image
+        run: |
+          set -euo pipefail
+          dmg=$(ls dist/*.dmg)
+          hdiutil attach "$dmg" -mountpoint /tmp/bpq -nobrowse -readonly
+          ls -la /tmp/bpq
+          test -d /tmp/bpq/bagfile_parser_qt.app || { echo "no .app in the dmg"; exit 1; }
+          test -L /tmp/bpq/Applications      || { echo "no /Applications drop target"; exit 1; }
+          # The bundle must carry its own Qt, or it will not run on a clean Mac.
+          test -d /tmp/bpq/bagfile_parser_qt.app/Contents/Frameworks/QtCore.framework \
+            || { echo "Qt was not bundled into the .app"; exit 1; }
+          /tmp/bpq/bagfile_parser_qt.app/Contents/MacOS/bagfile_parser_qt --help
+          hdiutil detach /tmp/bpq
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-${{ matrix.arch }}
+          path: dist/*
+
+  windows:
+    name: Windows (installer)
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: ver
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.2'
+          arch: win64_msvc2019_64
+          cache: true
+
+      # matio pulls in HDF5, which is slow to build; cache it across runs.
+      - name: Enable vcpkg binary caching
+        uses: actions/github-script@v7
+        with:
+          script: |
+            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+      - name: Build package
+        shell: pwsh
+        env:
+          BPQ_VERSION: ${{ steps.ver.outputs.version }}
+          VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
+        run: |
+          .\scripts\package.ps1 -QtDir "$env:QT_ROOT_DIR" -VcpkgRoot "$env:VCPKG_INSTALLATION_ROOT"
+
+      - name: Verify the portable build
+        shell: pwsh
+        run: |
+          $zip = Get-ChildItem dist\*.zip | Select-Object -First 1
+          Expand-Archive $zip.FullName -DestinationPath extracted
+          $exe = Get-ChildItem extracted -Recurse -Filter bagfile_parser_qt.exe | Select-Object -First 1
+          if (-not $exe) { throw "no bagfile_parser_qt.exe in the zip" }
+          # Qt must be bundled, or it will not start on a machine without Qt.
+          $qtCore = Get-ChildItem $exe.Directory -Filter 'Qt*Core.dll'
+          if (-not $qtCore) { throw "Qt DLLs were not bundled next to the exe" }
+          if (-not (Test-Path (Join-Path $exe.Directory 'platforms\qwindows.dll'))) {
+            throw "the qwindows platform plugin is missing; the GUI would not start"
+          }
+          & $exe.FullName --help
+          if ($LASTEXITCODE -ne 0) { throw "the packaged exe did not run" }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: dist/*
+
+  release:
+    name: Attach to release
+    needs: [linux, macos, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Publish
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
