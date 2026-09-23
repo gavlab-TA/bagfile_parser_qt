@@ -4,6 +4,7 @@
 #include <QtCore/QString>
 #include <QtCore/QThread>
 #include <QtGui/QFont>
+#include <QtGui/QFontMetrics>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QFileDialog>
@@ -156,6 +157,10 @@ MainWindow::MainWindow()
     this->threads_spin_->setRange(1, 256);
     int hc = static_cast<int>(QThread::idealThreadCount());
     this->threads_spin_->setValue(hc > 0 ? hc : 4);
+    // Some styles (e.g. Qt 6's windows11) under-report the size hint and clip
+    // the digits; reserve room for "256" plus the up/down buttons.
+    this->threads_spin_->setMinimumWidth(
+        this->threads_spin_->fontMetrics().horizontalAdvance(QStringLiteral("0000")) + 64);
 
     this->convert_button_ = new QPushButton("Convert");
     this->convert_button_->setEnabled(false);
