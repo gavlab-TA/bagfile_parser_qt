@@ -52,6 +52,20 @@ This is expected, not a sign of a bad download.
 | *"Apple could not verify…is free of malware"* | *System Settings → Privacy & Security* → **Open Anyway** (see note) |
 | *"…is damaged and can't be opened"* | Strip the quarantine flag (below) |
 
+**Avoiding the prompt entirely.** macOS attaches the quarantine attribute that
+triggers Gatekeeper only when the download came from an app that opts into it —
+Safari, Chrome, Firefox, Mail. `curl` does not, so fetching the disk image from
+a terminal sidesteps the prompt altogether:
+
+```bash
+curl -LO https://github.com/gavlab-TA/bagfile_parser_qt/releases/download/v0.1.0/bagfile_parser_qt-0.1.0-macos-arm64.dmg
+open bagfile_parser_qt-0.1.0-macos-arm64.dmg
+```
+
+This does not make the app signed; it avoids the flag that makes macOS check.
+The only way to remove the warning for everyone, however they download, is to
+notarize the app with a paid Apple Developer account.
+
 On macOS 15 (Sequoia) and later, right-clicking → Open no longer bypasses this
 prompt — Apple removed that shortcut. Try to open the app first, so that the
 **Open Anyway** button appears under *Privacy & Security*; it only shows up
