@@ -229,13 +229,22 @@ elseif(WIN32)
 
     # Qt DLLs, platform plugins and (for MinGW) the compiler runtime.
     bpq_find_deploy_tool(windeployqt BPQ_WINDEPLOYQT)
+    # --compiler-runtime is what pulls in libstdc++/libgcc for a MinGW build. On
+    # MSVC it is redundant: InstallRequiredSystemLibraries already copies the CRT
+    # DLLs, while windeployqt additionally ships the whole 24 MB vc_redist.x64.exe
+    # installer next to them.
+    if(MINGW)
+        set(BPQ_WINDEPLOYQT_RUNTIME_FLAG --compiler-runtime)
+    else()
+        set(BPQ_WINDEPLOYQT_RUNTIME_FLAG --no-compiler-runtime)
+    endif()
     if(BPQ_WINDEPLOYQT)
         install(CODE "
             message(STATUS \"Running windeployqt on the installed executable\")
             execute_process(
                 COMMAND \"${BPQ_WINDEPLOYQT}\"
                         --no-translations --no-system-d3d-compiler --no-opengl-sw
-                        --compiler-runtime
+                        ${BPQ_WINDEPLOYQT_RUNTIME_FLAG}
                         \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/bagfile_parser_qt.exe\"
                 RESULT_VARIABLE _rc)
             if(NOT _rc EQUAL 0)
@@ -247,6 +256,16 @@ elseif(WIN32)
     endif()
 
     include(InstallRequiredSystemLibraries)
+
+    # Some Qt versions copy vc_redist.x64.exe regardless; the CRT DLLs beside it
+    # make it dead weight (24 MB of it).
+    install(CODE "
+        file(GLOB _redist \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}/vc_redist*.exe\")
+        if(_redist)
+            file(REMOVE \${_redist})
+            message(STATUS \"Removed the bundled vc_redist installer (CRT DLLs are deployed directly)\")
+        endif()
+    ")
 
 else()
     install(TARGETS bagfile_parser_qt RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
