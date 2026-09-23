@@ -58,8 +58,9 @@ Safari, Chrome, Firefox, Mail. `curl` does not, so fetching the disk image from
 a terminal sidesteps the prompt altogether:
 
 ```bash
-curl -LO https://github.com/gavlab-TA/bagfile_parser_qt/releases/download/v0.1.0/bagfile_parser_qt-0.1.0-macos-arm64.dmg
-open bagfile_parser_qt-0.1.0-macos-arm64.dmg
+curl -L -o ~/Downloads/bagfile_parser_qt-0.1.0-macos-arm64.dmg \
+  https://github.com/gavlab-TA/bagfile_parser_qt/releases/download/v0.1.0/bagfile_parser_qt-0.1.0-macos-arm64.dmg
+open ~/Downloads/bagfile_parser_qt-0.1.0-macos-arm64.dmg
 ```
 
 This does not make the app signed; it avoids the flag that makes macOS check.
