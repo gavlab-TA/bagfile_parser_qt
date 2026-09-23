@@ -326,8 +326,11 @@ if(WIN32)
 
 elseif(APPLE)
     set(CPACK_GENERATOR "DragNDrop")
-    set(CPACK_PACKAGE_FILE_NAME
-        "bagfile_parser_qt-${PROJECT_VERSION}-macos-${CMAKE_SYSTEM_PROCESSOR}")
+    # Deliberately version-free: GitHub's /releases/latest/download/<name> only
+    # resolves an exact asset name, so a version in the filename would break
+    # every documented download link on each new release. The version is on the
+    # release page and in the app's Info.plist.
+    set(CPACK_PACKAGE_FILE_NAME "bagfile_parser_qt-macos-${CMAKE_SYSTEM_PROCESSOR}")
     set(CPACK_DMG_VOLUME_NAME "${BPQ_DISPLAY_NAME} ${PROJECT_VERSION}")
     set(CPACK_DMG_FORMAT "UDZO")
 else()

@@ -14,7 +14,7 @@ build one yourself with a single command (see [Building a package](#building-a-p
 |----------|---------|---------|
 | Windows 10/11 (x64) | `bagfile_parser_qt-<ver>-windows-x64.exe` | Run it. Adds a Start Menu entry and can put the CLI on your `PATH`. |
 | Ubuntu / Debian | `bagfile-parser-qt_<ver>_<arch>.deb` | `sudo apt install ./bagfile-parser-qt_<ver>_<arch>.deb` |
-| macOS | `bagfile_parser_qt-<ver>-macos-<arch>.dmg` | Open it, drag the app to Applications. |
+| macOS | `bagfile_parser_qt-macos-<arch>.dmg` | Open it, drag the app to Applications. |
 
 The Windows and macOS packages carry their own Qt, so nothing needs to be
 preinstalled. The `.deb` depends on your distribution's Qt, matio, lz4 and zstd
@@ -58,9 +58,9 @@ Safari, Chrome, Firefox, Mail. `curl` does not, so fetching the disk image from
 a terminal sidesteps the prompt altogether:
 
 ```bash
-curl -L -o ~/Downloads/bagfile_parser_qt-0.1.0-macos-arm64.dmg \
-  https://github.com/gavlab-TA/bagfile_parser_qt/releases/download/v0.1.0/bagfile_parser_qt-0.1.0-macos-arm64.dmg
-open ~/Downloads/bagfile_parser_qt-0.1.0-macos-arm64.dmg
+curl -L -o ~/Downloads/bagfile_parser_qt-macos-arm64.dmg \
+  https://github.com/gavlab-TA/bagfile_parser_qt/releases/latest/download/bagfile_parser_qt-macos-arm64.dmg
+open ~/Downloads/bagfile_parser_qt-macos-arm64.dmg
 ```
 
 This does not make the app signed; it avoids the flag that makes macOS check.
