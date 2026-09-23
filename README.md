@@ -36,13 +36,34 @@ sudo apt install ./dist/bagfile-parser-qt_*.deb
 
 ### Unsigned binaries
 
-None of the packages are code-signed, so first launch needs one extra step:
+None of the packages are code-signed, so first launch needs one extra step.
+This is expected, not a sign of a bad download.
 
-- **Windows** — SmartScreen shows *"Windows protected your PC"*. Click
-  **More info → Run anyway**.
-- **macOS** — Gatekeeper refuses a double-click. **Right-click the app → Open**,
-  then confirm; or allow it under *System Settings → Privacy & Security*.
-- **Linux** — nothing to do.
+**Linux** — nothing to do.
+
+**Windows** — SmartScreen shows *"Windows protected your PC"*. Click
+**More info → Run anyway**.
+
+**macOS** — which prompt you get depends on the macOS version:
+
+| What you see | What to do |
+|---|---|
+| *"…is from an unidentified developer"* | Right-click the app → **Open** → **Open** |
+| *"Apple could not verify…is free of malware"* | *System Settings → Privacy & Security* → **Open Anyway** |
+| *"…is damaged and can't be opened"* | Strip the quarantine flag (below) |
+
+The "damaged" message is misleading — the download is fine. macOS applies a
+quarantine attribute to anything downloaded, and an app that is ad-hoc signed
+but not notarized by Apple gets reported as damaged rather than merely
+untrusted. Remove the attribute:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/bagfile_parser_qt.app
+```
+
+The app must be ad-hoc signed — Apple silicon refuses to run a binary without
+at least that — so the only way to remove this step entirely is to notarize the
+app, which requires a paid Apple Developer account.
 
 ## Building a package
 
