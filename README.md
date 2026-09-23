@@ -49,8 +49,13 @@ This is expected, not a sign of a bad download.
 | What you see | What to do |
 |---|---|
 | *"…is from an unidentified developer"* | Right-click the app → **Open** → **Open** |
-| *"Apple could not verify…is free of malware"* | *System Settings → Privacy & Security* → **Open Anyway** |
+| *"Apple could not verify…is free of malware"* | *System Settings → Privacy & Security* → **Open Anyway** (see note) |
 | *"…is damaged and can't be opened"* | Strip the quarantine flag (below) |
+
+On macOS 15 (Sequoia) and later, right-clicking → Open no longer bypasses this
+prompt — Apple removed that shortcut. Try to open the app first, so that the
+**Open Anyway** button appears under *Privacy & Security*; it only shows up
+after a blocked launch, and only for about an hour afterwards.
 
 The "damaged" message is misleading — the download is fine. macOS applies a
 quarantine attribute to anything downloaded, and an app that is ad-hoc signed
