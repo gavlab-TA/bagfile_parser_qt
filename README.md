@@ -13,7 +13,6 @@ build one yourself with a single command (see [Building a package](#building-a-p
 | Platform | Package | Install |
 |----------|---------|---------|
 | Windows 10/11 (x64) | `bagfile_parser_qt-<ver>-windows-x64.exe` | Run it. Adds a Start Menu entry and can put the CLI on your `PATH`. |
-| Windows, no install | `bagfile_parser_qt-<ver>-windows-x64.zip` | Unzip anywhere and run `bagfile_parser_qt.exe`. |
 | Ubuntu / Debian | `bagfile-parser-qt_<ver>_<arch>.deb` | `sudo apt install ./bagfile-parser-qt_<ver>_<arch>.deb` |
 | macOS | `bagfile_parser_qt-<ver>-macos-<arch>.dmg` | Open it, drag the app to Applications. |
 
@@ -53,9 +52,10 @@ package into `dist/`. That directory is gitignored — packages are attached to
 GitHub Releases, never committed, so the repository never carries a binary that
 changes on every update.
 
-**Linux** — produces a `.deb` (plus a `.tar.gz`) for the architecture you run it
-on. `Depends:` is computed from the built binary with `dpkg-shlibdeps`, so the
-package requests the right Qt/matio/lz4/zstd for your distribution release.
+**Linux** — produces a `.deb` for the architecture you run it on. `Depends:` is
+computed from the built binary with `dpkg-shlibdeps`, so the package requests
+the right Qt/matio/lz4/zstd for your distribution release. On a distribution
+with no `dpkg` (Fedora, Arch, ...) you get a `.tar.gz` instead.
 
 ```bash
 ./scripts/package.sh
@@ -71,9 +71,9 @@ on an Intel Mac.
 ./scripts/package.sh      # needs Homebrew for the dependencies
 ```
 
-**Windows** — produces an NSIS installer and a portable `.zip`. Dependencies come
-from vcpkg and are linked statically, so the payload is the `.exe` plus the Qt
-DLLs that `windeployqt` bundles.
+**Windows** — produces an NSIS installer. Dependencies come from vcpkg and are
+linked statically, so the payload is the app plus the Qt DLLs and C++ runtime
+that `windeployqt` bundles.
 
 ```powershell
 .\scripts\package.ps1
