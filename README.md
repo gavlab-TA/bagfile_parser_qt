@@ -92,6 +92,10 @@ HDF5 from source, which takes several minutes; later runs reuse vcpkg's cache.
 
 ### Prerequisites for building
 
+> These apply only to **building** a package. Installing one needs nothing:
+> the Windows and macOS packages carry their own Qt and libraries, and the
+> `.deb` lets `apt` resolve its dependencies.
+
 The scripts install what they can, but these have to be present first:
 
 - **Linux** — nothing; `package.sh` installs the compiler, CMake, Qt and the

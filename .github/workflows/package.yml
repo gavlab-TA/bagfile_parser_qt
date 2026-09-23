@@ -162,6 +162,16 @@ jobs:
           if (-not (Test-Path (Join-Path $exe.Directory 'platforms\qwindows.dll'))) {
             throw "the qwindows platform plugin is missing; the GUI would not start"
           }
+          Write-Host "::group::payload"; Get-ChildItem $exe.Directory -Recurse -File |
+            ForEach-Object { $_.FullName.Replace($exe.Directory.FullName,'') }; Write-Host "::endgroup::"
+          # The x64-windows-static-md triplet links the C runtime dynamically, so
+          # the VC++ redistributable DLLs must ship with us. Without them a clean
+          # Windows box fails at launch with "vcruntime140.dll was not found".
+          foreach ($dll in @('vcruntime140.dll', 'msvcp140.dll')) {
+            if (-not (Test-Path (Join-Path $exe.Directory $dll))) {
+              throw "$dll is not bundled; the app would not start on a machine without the VC++ redistributable"
+            }
+          }
           & $exe.FullName --help
           if ($LASTEXITCODE -ne 0) { throw "the packaged exe did not run" }
 
