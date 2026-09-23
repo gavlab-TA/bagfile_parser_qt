@@ -149,39 +149,56 @@ jobs:
         run: |
           .\scripts\package.ps1 -QtDir "$env:QT_ROOT_DIR" -VcpkgRoot "$env:VCPKG_INSTALLATION_ROOT"
 
-      - name: Verify the portable build
+      - name: Verify the installer
         shell: pwsh
         run: |
           # Only real packages may be published. A bare bagfile_parser_qt.exe here
           # would be the raw linker output with no Qt DLLs beside it - it looks
           # like the app, and crashes the moment anyone runs it.
           $stray = Get-ChildItem dist -File |
-            Where-Object { $_.Name -notmatch '^bagfile_parser_qt-.+\.(exe|zip)$' }
-          if ($stray) {
-            throw "unshippable files in dist/: $($stray.Name -join ', ')"
-          }
-          $zip = Get-ChildItem dist\*.zip | Select-Object -First 1
-          Expand-Archive $zip.FullName -DestinationPath extracted
-          $exe = Get-ChildItem extracted -Recurse -Filter bagfile_parser_qt.exe | Select-Object -First 1
-          if (-not $exe) { throw "no bagfile_parser_qt.exe in the zip" }
-          # Qt must be bundled, or it will not start on a machine without Qt.
-          $qtCore = Get-ChildItem $exe.Directory -Filter 'Qt*Core.dll'
-          if (-not $qtCore) { throw "Qt DLLs were not bundled next to the exe" }
-          if (-not (Test-Path (Join-Path $exe.Directory 'platforms\qwindows.dll'))) {
+            Where-Object { $_.Name -notmatch '^bagfile_parser_qt-.+\.exe$' }
+          if ($stray) { throw "unshippable files in dist/: $($stray.Name -join ', ')" }
+
+          $inst = Get-ChildItem dist\*.exe | Select-Object -First 1
+          $dest = Join-Path $env:RUNNER_TEMP 'bpq-install'
+
+          # Actually run the installer, the way a user would. /S is silent;
+          # /D must come last and be unquoted.
+          Write-Host "installing $($inst.Name) to $dest"
+          $p = Start-Process -FilePath $inst.FullName -ArgumentList '/S', "/D=$dest" -Wait -PassThru
+          if ($p.ExitCode -ne 0) { throw "the installer exited with $($p.ExitCode)" }
+          if (-not (Test-Path $dest)) { throw "the installer created nothing at $dest" }
+
+          Write-Host "::group::installed tree"
+          Get-ChildItem $dest -Recurse -File | ForEach-Object { $_.FullName.Replace($dest,'') }
+          Write-Host "::endgroup::"
+
+          $exe = Join-Path $dest 'bin\bagfile_parser_qt.exe'
+          if (-not (Test-Path $exe)) { throw "bagfile_parser_qt.exe was not installed" }
+          $bin = Split-Path $exe -Parent
+
+          # Everything the app needs must have been installed with it, since the
+          # target machine has no Qt and may have no VC++ redistributable.
+          if (-not (Get-ChildItem $bin -Filter 'Qt*Core.dll')) { throw "Qt DLLs were not installed" }
+          if (-not (Test-Path (Join-Path $bin 'platforms\qwindows.dll'))) {
             throw "the qwindows platform plugin is missing; the GUI would not start"
           }
-          Write-Host "::group::payload"; Get-ChildItem $exe.Directory -Recurse -File |
-            ForEach-Object { $_.FullName.Replace($exe.Directory.FullName,'') }; Write-Host "::endgroup::"
-          # The x64-windows-static-md triplet links the C runtime dynamically, so
-          # the VC++ redistributable DLLs must ship with us. Without them a clean
-          # Windows box fails at launch with "vcruntime140.dll was not found".
           foreach ($dll in @('vcruntime140.dll', 'msvcp140.dll')) {
-            if (-not (Test-Path (Join-Path $exe.Directory $dll))) {
-              throw "$dll is not bundled; the app would not start on a machine without the VC++ redistributable"
+            if (-not (Test-Path (Join-Path $bin $dll))) {
+              throw "$dll was not installed; the app would not start without the VC++ redistributable"
             }
           }
-          & $exe.FullName --help
-          if ($LASTEXITCODE -ne 0) { throw "the packaged exe did not run" }
+
+          # Run the installed binary, not one from the build tree.
+          & $exe --help
+          if ($LASTEXITCODE -ne 0) { throw "the installed exe did not run" }
+
+          # The uninstaller must work too, or we leave people stuck.
+          $uninst = Get-ChildItem $dest -Filter 'Uninstall*.exe' | Select-Object -First 1
+          if (-not $uninst) { throw "no uninstaller was installed" }
+          $u = Start-Process -FilePath $uninst.FullName -ArgumentList '/S' -Wait -PassThru
+          if ($u.ExitCode -ne 0) { throw "the uninstaller exited with $($u.ExitCode)" }
+          Write-Host "installer and uninstaller both succeeded"
 
       - uses: actions/upload-artifact@v4
         with:

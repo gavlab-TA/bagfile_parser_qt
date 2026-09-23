@@ -3,12 +3,10 @@
     Build a redistributable Windows package of bagfile_parser_qt.
 
 .DESCRIPTION
-    Produces, in dist\:
-      bagfile_parser_qt-<version>-windows-x64.exe    NSIS installer
-      bagfile_parser_qt-<version>-windows-x64.zip    portable, unzip-and-run
+    Produces dist\bagfile_parser_qt-<version>-windows-x64.exe, an NSIS installer.
 
-    Both bundle the Qt DLLs and the platform plugin, so the machine you hand
-    them to needs nothing preinstalled.
+    It bundles the Qt DLLs, the platform plugin and the C++ runtime, so the
+    machine you hand it to needs nothing preinstalled.
 
     Dependencies (matio, lz4, zstd) come from vcpkg and are linked statically by
     default, which keeps the payload to the .exe plus a handful of Qt DLLs.
@@ -261,7 +259,6 @@ foreach ($pkg in $packages) {
 Write-Host ''
 Write-Host 'Hand the .exe to anyone on 64-bit Windows: it installs to Program Files,'
 Write-Host 'adds a Start Menu entry, and can put bagfile_parser_qt on their PATH.'
-Write-Host 'The .zip is the same build with nothing to install.'
 Write-Host ''
 Write-Host 'Note: the binaries are unsigned, so SmartScreen shows a "Windows protected'
 Write-Host 'your PC" prompt on first run -- More info -> Run anyway.'

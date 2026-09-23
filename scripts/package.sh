@@ -2,7 +2,7 @@
 #
 # Build a redistributable package of bagfile_parser_qt.
 #
-#   Linux  ->  dist/bagfile-parser-qt_<version>_<arch>.deb  (+ a .tar.gz)
+#   Linux  ->  dist/bagfile-parser-qt_<version>_<arch>.deb
 #   macOS  ->  dist/bagfile_parser_qt-<version>-macos-<arch>.dmg
 #
 # Hand the resulting file to anyone on the same OS and architecture. Anyone on a

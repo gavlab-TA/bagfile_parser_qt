@@ -307,7 +307,7 @@ set(CPACK_PACKAGE_EXECUTABLES       "bagfile_parser_qt" "${BPQ_DISPLAY_NAME}")
 set(CPACK_STRIP_FILES TRUE)
 
 if(WIN32)
-    set(CPACK_GENERATOR "NSIS;ZIP")
+    set(CPACK_GENERATOR "NSIS")
     set(CPACK_PACKAGE_FILE_NAME "bagfile_parser_qt-${PROJECT_VERSION}-windows-x64")
 
     # NSIS wants native (backslashed) paths for its icon settings.
@@ -331,16 +331,19 @@ elseif(APPLE)
     set(CPACK_DMG_VOLUME_NAME "${BPQ_DISPLAY_NAME} ${PROJECT_VERSION}")
     set(CPACK_DMG_FORMAT "UDZO")
 else()
-    set(CPACK_GENERATOR "TGZ")
     set(CPACK_PACKAGE_FILE_NAME
         "bagfile_parser_qt-${PROJECT_VERSION}-linux-${CMAKE_SYSTEM_PROCESSOR}")
 
-    # .deb, when the tooling is present. Everything here is derived from the
-    # build machine, so a user on another architecture gets a correct package
-    # simply by running scripts/package.sh themselves.
+    # The .deb is the deliverable. Everything about it is derived from the build
+    # machine, so a user on another architecture gets a correct package simply by
+    # running scripts/package.sh themselves. On a system with no dpkg (Fedora,
+    # Arch, ...) fall back to a tarball so there is still something to hand over.
     find_program(BPQ_DPKG dpkg)
-    if(BPQ_DPKG)
-        list(APPEND CPACK_GENERATOR "DEB")
+    if(NOT BPQ_DPKG)
+        message(STATUS "dpkg not found - packaging as a .tar.gz instead of a .deb")
+        set(CPACK_GENERATOR "TGZ")
+    else()
+        set(CPACK_GENERATOR "DEB")
         # Debian package names must be lowercase and space-free.
         set(CPACK_DEBIAN_PACKAGE_NAME "bagfile-parser-qt")
         set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${BPQ_VENDOR}")
