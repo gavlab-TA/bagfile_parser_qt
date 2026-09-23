@@ -322,6 +322,9 @@ if(WIN32)
     set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
     # Offers a "add to PATH" checkbox, so the CLI works from any terminal.
     set(CPACK_NSIS_MODIFY_PATH ON)
+    # CPack's own PATH code gives up once PATH passes 1024 characters.
+    include(${CMAKE_CURRENT_SOURCE_DIR}/packaging/nsis_template.cmake)
+    list(PREPEND CMAKE_MODULE_PATH "${BPQ_NSIS_TEMPLATE_DIR}")
     set(CPACK_CREATE_DESKTOP_LINKS "bagfile_parser_qt")
 
 elseif(APPLE)
