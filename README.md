@@ -106,7 +106,9 @@ The scripts install what they can, but these have to be present first:
   and Ninja. Install Qt with the official installer rather than vcpkg: vcpkg
   compiles Qt from source, which is far slower than downloading a prebuilt one.
   Pick one toolchain and stay on it — a MinGW Qt cannot be linked against an
-  MSVC build.
+  MSVC build. If you use an MSVC Qt kit instead, you also need the Visual Studio
+  C++ build tools (`winget install Microsoft.VisualStudio.2022.BuildTools`);
+  `package.ps1` activates that environment for you.
 
 Releases are built by [`.github/workflows/package.yml`](.github/workflows/package.yml),
 which runs these same scripts on Linux, macOS (Intel and Apple silicon) and

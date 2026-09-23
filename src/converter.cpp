@@ -38,6 +38,10 @@
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
+// windows.h defines min/max as macros, which breaks every std::min/std::max
+// below when building with MSVC. (mingw-w64 leaves them out in C++ mode, which
+// is why a MinGW build does not hit this.)
+#define NOMINMAX
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <sys/sysctl.h>
