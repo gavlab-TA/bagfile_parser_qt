@@ -234,17 +234,26 @@ if ($LASTEXITCODE -ne 0) { Die 'Build failed (see the output above)' }
 
 # -------------------------------------------------------------- package -----
 Write-Step 'Packaging'
+# Collect exactly the files CPack reports generating. Globbing the build tree
+# for *.exe would also sweep up the raw linker output, which has no Qt DLLs
+# beside it and would crash on launch -- a dangerous thing to publish.
+$packages = @()
 Push-Location $BuildDir
 try {
-    & cpack
+    & cpack 2>&1 | ForEach-Object {
+        Write-Host $_
+        if ("$_" -match 'package:\s*(.+?)\s*generated\.') { $packages += $matches[1] }
+    }
     if ($LASTEXITCODE -ne 0) { Die 'cpack failed (see the output above)' }
 } finally { Pop-Location }
 
+if (-not $packages) { Die 'cpack reported no generated packages; see the output above' }
+
 Write-Step "Collecting packages into $Output"
 New-Item -ItemType Directory -Force -Path $Output | Out-Null
-$artifacts = Get-ChildItem $BuildDir -File | Where-Object { $_.Extension -in '.exe', '.zip' }
-if (-not $artifacts) { Die 'cpack produced no packages; see the output above' }
-foreach ($a in $artifacts) {
+foreach ($pkg in $packages) {
+    if (-not (Test-Path $pkg)) { Die "cpack reported '$pkg' but it does not exist" }
+    $a = Get-Item $pkg
     Move-Item -Force $a.FullName (Join-Path $Output $a.Name)
     Write-Info ('{0}  ({1:N1} MB)' -f $a.Name, ($a.Length / 1MB))
 }

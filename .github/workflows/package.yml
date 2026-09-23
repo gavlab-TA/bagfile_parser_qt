@@ -152,6 +152,14 @@ jobs:
       - name: Verify the portable build
         shell: pwsh
         run: |
+          # Only real packages may be published. A bare bagfile_parser_qt.exe here
+          # would be the raw linker output with no Qt DLLs beside it - it looks
+          # like the app, and crashes the moment anyone runs it.
+          $stray = Get-ChildItem dist -File |
+            Where-Object { $_.Name -notmatch '^bagfile_parser_qt-.+\.(exe|zip)$' }
+          if ($stray) {
+            throw "unshippable files in dist/: $($stray.Name -join ', ')"
+          }
           $zip = Get-ChildItem dist\*.zip | Select-Object -First 1
           Expand-Archive $zip.FullName -DestinationPath extracted
           $exe = Get-ChildItem extracted -Recurse -Filter bagfile_parser_qt.exe | Select-Object -First 1

@@ -98,17 +98,22 @@ cmake --build "$BUILD_DIR" --parallel "$JOBS"
 # --------------------------------------------------------------- package ----
 step "Packaging"
 mkdir -p "$DIST_DIR"
-( cd "$BUILD_DIR" && cpack )
+# Collect exactly what CPack reports generating rather than globbing the build
+# tree, so a build artefact can never be mistaken for a shippable package.
+cpack_log="$BUILD_DIR/cpack-output.log"
+( cd "$BUILD_DIR" && cpack ) 2>&1 | tee "$cpack_log"
+[ "${PIPESTATUS[0]}" -eq 0 ] || die "cpack failed (see the output above)"
 
 step "Collecting packages into $DIST_DIR"
 found=0
-for f in "$BUILD_DIR"/*.deb "$BUILD_DIR"/*.dmg "$BUILD_DIR"/*.tar.gz; do
-    [ -e "$f" ] || continue
+while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -e "$f" ] || die "cpack reported '$f' but it does not exist"
     mv -f "$f" "$DIST_DIR/"
     info "$(basename "$f")  ($(du -h "$DIST_DIR/$(basename "$f")" | cut -f1))"
     found=1
-done
-[ $found -eq 1 ] || die "cpack produced no packages; see the output above"
+done < <(sed -n 's/^.*package: \(.*\) generated\.$/\1/p' "$cpack_log")
+[ $found -eq 1 ] || die "cpack reported no generated packages; see the output above"
 
 if [ "$OS" = "Linux" ]; then
     cat <<EOF
