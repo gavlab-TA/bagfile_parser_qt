@@ -61,14 +61,20 @@ install_deps_linux() {
             local qt_pkg="qt6-base-dev"
             apt-cache show "$qt_pkg" >/dev/null 2>&1 || qt_pkg="qtbase5-dev"
             info "using Qt package: $qt_pkg"
+            # Qt6's CMake config hard-requires WrapOpenGL, and qt6-base-dev
+            # does not pull the GL headers in on its own; without libgl1-mesa-dev
+            # find_package(Qt6 COMPONENTS Widgets) fails with
+            # "Qt6Gui could not be found because dependency WrapOpenGL could not be found".
+            local gl_pkgs="libgl1-mesa-dev libxkbcommon-dev"
             $sudo_cmd apt-get install -y \
-                build-essential cmake pkg-config "$qt_pkg" \
+                build-essential cmake pkg-config "$qt_pkg" $gl_pkgs \
                 libmatio-dev liblz4-dev libzstd-dev
             ;;
         *" fedora "*|*" rhel "*|*" centos "*)
             step "Installing dependencies with dnf"
             $sudo_cmd dnf install -y \
                 gcc-c++ cmake pkgconf-pkg-config qt6-qtbase-devel \
+                mesa-libGL-devel libxkbcommon-devel \
                 matio-devel lz4-devel libzstd-devel
             ;;
         *" arch "*|*" archlinux "*|*" manjaro "*)
@@ -80,13 +86,14 @@ install_deps_linux() {
             step "Installing dependencies with zypper"
             $sudo_cmd zypper install -y \
                 gcc-c++ cmake pkg-config qt6-base-devel \
+                Mesa-libGL-devel libxkbcommon-devel \
                 matio-devel liblz4-devel libzstd-devel
             ;;
         *)
             warn "unrecognised distribution '${id:-unknown}'; skipping automatic dependency install.
     Install these yourself, then re-run with --no-deps:
       a C++17 compiler, cmake >= 3.16, pkg-config, Qt 5 or 6 (Core + Widgets),
-      matio, lz4, zstd"
+      OpenGL development headers (Qt6 needs them), matio, lz4, zstd"
             ;;
     esac
 }

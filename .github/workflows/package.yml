@@ -57,15 +57,10 @@ jobs:
 
   macos:
     name: macOS (.dmg)
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: macos-14   # Apple silicon
-            arch: arm64
-          - runner: macos-13   # Intel
-            arch: x86_64
-    runs-on: ${{ matrix.runner }}
+    # Intel runners (macos-13) are being retired and now sit queued for hours,
+    # which stalls the whole run. An Intel .dmg is produced by running
+    # scripts/package.sh on an Intel Mac.
+    runs-on: macos-14   # Apple silicon
     steps:
       - uses: actions/checkout@v4
 
@@ -99,7 +94,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: macos-dmg-${{ matrix.arch }}
+          name: macos-dmg-arm64
           path: dist/*
 
   windows:
@@ -125,19 +120,18 @@ jobs:
           arch: win64_msvc2019_64
           cache: true
 
-      # matio pulls in HDF5, which is slow to build; cache it across runs.
-      - name: Enable vcpkg binary caching
-        uses: actions/github-script@v7
+      # matio pulls in HDF5, which takes minutes to build from source.
+      # vcpkg's x-gha backend was removed, so cache the built packages directly.
+      - name: Cache vcpkg packages
+        uses: actions/cache@v4
         with:
-          script: |
-            core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
-            core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+          path: ${{ github.workspace }}/vcpkg_installed
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
 
       - name: Build package
         shell: pwsh
         env:
           BPQ_VERSION: ${{ steps.ver.outputs.version }}
-          VCPKG_BINARY_SOURCES: 'clear;x-gha,readwrite'
         run: |
           .\scripts\package.ps1 -QtDir "$env:QT_ROOT_DIR" -VcpkgRoot "$env:VCPKG_INSTALLATION_ROOT"
 

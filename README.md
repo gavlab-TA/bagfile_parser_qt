@@ -63,7 +63,9 @@ package requests the right Qt/matio/lz4/zstd for your distribution release.
 
 **macOS** — produces a drag-to-install `.dmg`. `macdeployqt` copies Qt into the
 bundle, so it runs on a Mac with no Qt installed. The `.dmg` is specific to the
-architecture you build on (Apple silicon or Intel).
+architecture you build on. CI only publishes an Apple silicon build, because
+GitHub's Intel runners are being retired; for an Intel `.dmg`, run this script
+on an Intel Mac.
 
 ```bash
 ./scripts/package.sh      # needs Homebrew for the dependencies

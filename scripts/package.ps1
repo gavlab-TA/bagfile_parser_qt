@@ -111,6 +111,49 @@ if ($IsMinGWKit) {
     }
 }
 
+# For an MSVC kit, cl.exe must be the compiler CMake picks. It is not on PATH by
+# default, and Windows machines (including CI runners) often carry a MinGW gcc
+# that Ninja would silently choose instead -- producing a binary that cannot link
+# against vcpkg's MSVC-built static libraries (undefined __security_cookie,
+# __GSHandlerCheck, __chkstk ...). Import the Visual Studio developer
+# environment so the right toolchain wins.
+function Enter-VsDevEnvironment {
+    if (Get-Command cl.exe -ErrorAction SilentlyContinue) {
+        Write-Info 'MSVC environment already active'
+        return
+    }
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
+    if (-not (Test-Path $vswhere)) {
+        Die @'
+Visual Studio was not found, and the selected Qt kit is an MSVC build.
+    Install the "Desktop development with C++" workload (Visual Studio or the
+    standalone Build Tools: winget install Microsoft.VisualStudio.2022.BuildTools),
+    or use a MinGW Qt kit instead:  .\scripts\package.ps1 -QtDir C:\Qt\<ver>\mingw_64
+'@
+    }
+    $vsPath = & $vswhere -latest -products * `
+        -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 `
+        -property installationPath
+    if (-not $vsPath) { Die 'no Visual Studio installation with the C++ toolchain was found' }
+
+    $devCmd = Join-Path $vsPath 'Common7\Tools\VsDevCmd.bat'
+    if (-not (Test-Path $devCmd)) { Die "VsDevCmd.bat not found under $vsPath" }
+
+    Write-Step 'Activating the MSVC build environment'
+    # Run VsDevCmd in cmd, then copy the environment it sets back into this session.
+    & cmd /c "`"$devCmd`" -arch=amd64 -host_arch=amd64 >nul && set" | ForEach-Object {
+        if ($_ -match '^([^=]+)=(.*)$') {
+            Set-Item -Path "env:$($matches[1])" -Value $matches[2] -ErrorAction SilentlyContinue
+        }
+    }
+    if (-not (Get-Command cl.exe -ErrorAction SilentlyContinue)) {
+        Die 'activated VsDevCmd but cl.exe is still not on PATH'
+    }
+    Write-Info "MSVC: $((Get-Command cl.exe).Source)"
+}
+
+if (-not $IsMinGWKit) { Enter-VsDevEnvironment }
+
 # ---------------------------------------------------------------- tools -----
 Require-Command cmake @'
 Install CMake from https://cmake.org/download/ and tick
@@ -165,7 +208,11 @@ $cmakeArgs = @(
 # CMakeLists.txt is used.
 if ($env:BPQ_VERSION) { $cmakeArgs += "-DBPQ_VERSION=$env:BPQ_VERSION" }
 if (Get-Command ninja -ErrorAction SilentlyContinue) { $cmakeArgs += @('-G', 'Ninja') }
-if ($IsMinGWKit) { $cmakeArgs += @('-DCMAKE_CXX_COMPILER=g++', '-DCMAKE_C_COMPILER=gcc') }
+if ($IsMinGWKit) {
+    $cmakeArgs += @('-DCMAKE_CXX_COMPILER=g++', '-DCMAKE_C_COMPILER=gcc')
+} else {
+    $cmakeArgs += @('-DCMAKE_CXX_COMPILER=cl', '-DCMAKE_C_COMPILER=cl')
+}
 if (-not $SkipDeps) {
     # Manifest mode: vcpkg.json at the repo root drives what gets built.
     $cmakeArgs += @(

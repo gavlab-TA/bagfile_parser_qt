@@ -186,17 +186,19 @@ if(APPLE AND BPQ_MACOS_BUNDLE)
             if(NOT _rc EQUAL 0)
                 message(WARNING \"macdeployqt failed (\${_rc}); the .app may need Qt installed to run\")
             endif()
+            # macdeployqt rewrites load commands inside the copied dylibs, which
+            # breaks their signatures. arm64 refuses to run an incorrectly signed
+            # binary, so ad-hoc re-sign the whole bundle afterwards.
+            execute_process(
+                COMMAND codesign --force --deep --sign -
+                        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${BPQ_BUNDLE_DEST}/bagfile_parser_qt.app\"
+                RESULT_VARIABLE _sign_rc)
+            if(NOT _sign_rc EQUAL 0)
+                message(WARNING \"ad-hoc codesign failed (\${_sign_rc}); the .app may not launch on Apple silicon\")
+            endif()
         ")
     else()
         message(STATUS "macdeployqt not found - the .app will require a local Qt install")
-    endif()
-
-    if(BPQ_MACOS_DMG_LAYOUT)
-        # The drop target users drag the .app onto.
-        install(CODE "
-            file(CREATE_LINK \"/Applications\"
-                 \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/Applications\" SYMBOLIC)
-        ")
     endif()
 
     # CLI entry point: <prefix>/bin/bagfile_parser_qt -> the bundle's executable.
