@@ -47,6 +47,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y "./$deb"
           bagfile_parser_qt --help
+          # desktop-file-utils is not on the runner by default.
+          sudo apt-get install -y desktop-file-utils
           desktop-file-validate /usr/share/applications/bagfile_parser_qt.desktop
           sudo apt-get remove -y bagfile-parser-qt
 
@@ -87,8 +89,20 @@ jobs:
           test -d /tmp/bpq/bagfile_parser_qt.app || { echo "no .app in the dmg"; exit 1; }
           test -L /tmp/bpq/Applications      || { echo "no /Applications drop target"; exit 1; }
           # The bundle must carry its own Qt, or it will not run on a clean Mac.
-          test -d /tmp/bpq/bagfile_parser_qt.app/Contents/Frameworks/QtCore.framework \
-            || { echo "Qt was not bundled into the .app"; exit 1; }
+          fw=/tmp/bpq/bagfile_parser_qt.app/Contents/Frameworks
+          test -d "$fw/QtCore.framework" || { echo "Qt was not bundled into the .app"; exit 1; }
+          echo "::group::bundled libraries"; ls "$fw"; echo "::endgroup::"
+          # Same for the Homebrew libraries: matio (and the HDF5 it needs) must be
+          # inside the bundle, since the target Mac will not have Homebrew.
+          ls "$fw" | grep -q '^libmatio' || { echo "matio was not bundled into the .app"; exit 1; }
+          ls "$fw" | grep -q '^libhdf5'  || { echo "hdf5 was not bundled into the .app"; exit 1; }
+          # Nothing may still point at /opt/homebrew, or it breaks off this machine.
+          if otool -L /tmp/bpq/bagfile_parser_qt.app/Contents/MacOS/bagfile_parser_qt \
+               | grep -q /opt/homebrew; then
+            echo "the executable still links against Homebrew paths:"
+            otool -L /tmp/bpq/bagfile_parser_qt.app/Contents/MacOS/bagfile_parser_qt
+            exit 1
+          fi
           /tmp/bpq/bagfile_parser_qt.app/Contents/MacOS/bagfile_parser_qt --help
           hdiutil detach /tmp/bpq
 
