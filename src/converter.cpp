@@ -83,32 +83,59 @@ R"MATLAB(function data = bag_to_mat_load(basename)
         if isempty(data)
             data = part;
         else
-            data = local_cat(data, part, numel(part.t));
+            data = local_cat(data, part, numel(data.t), numel(part.t));
         end
     end
 end
 
-function a = local_cat(a, b, n)
+% Per-message fields are either [1 x n] rows (scalars, strings) or have
+% messages down dim 1 ([n x W], [n x M x W], {n x W}, ...). na/nb are the
+% message counts of a and b; whichever has more than one message decides.
+function a = local_cat(a, b, na, nb)
     fns = fieldnames(b);
     for i = 1:numel(fns)
         fn = fns{i};
         bv = b.(fn); av = a.(fn);
         if isstruct(bv)
-            a.(fn) = local_cat(av, bv, n);
-        elseif iscell(bv)
-            a.(fn) = [av, bv];               % [1 x n] cell -> horzcat
-        elseif size(bv,1) == n && size(bv,2) ~= n
-            wa = size(av,2); wb = size(bv,2); % [n x W] -> vertcat (NaN-pad width)
-            if wa ~= wb
-                w = max(wa, wb);
-                av(:, end+1:w) = NaN;
-                bv(:, end+1:w) = NaN;
-            end
-            a.(fn) = [av; bv];
+            a.(fn) = local_cat(av, bv, na, nb);
+        elseif local_is_row(av, bv, na, nb)
+            a.(fn) = [av, bv];
         else
-            a.(fn) = [av, bv];               % [1 x n] row -> horzcat
+            a.(fn) = local_vcat(av, bv);
         end
     end
+end
+
+function tf = local_is_row(av, bv, na, nb)
+    if na > 1
+        tf = ismatrix(av) && size(av,1) == 1 && size(av,2) == na;
+    elseif nb > 1
+        tf = ismatrix(bv) && size(bv,1) == 1 && size(bv,2) == nb;
+    else
+        tf = isscalar(bv);                   % one message each: 1x1 cats either way
+    end
+end
+
+% Stack along dim 1, padding every other dim to the larger of the two
+% (dynamic arrays can have a different max length in each part).
+function c = local_vcat(av, bv)
+    r = max(ndims(av), ndims(bv));
+    sa = size(av); sa(end+1:r) = 1;
+    sb = size(bv); sb(end+1:r) = 1;
+    w = max(sa(2:end), sb(2:end));
+    c = cat(1, local_pad(av, sa, w), local_pad(bv, sb, w));
+end
+
+function v = local_pad(v, s, w)
+    if isequal(s(2:end), w); return; end
+    if iscell(v)
+        out = repmat({''}, [s(1) w]);
+    else
+        out = NaN([s(1) w]);
+    end
+    idx = [{':'}, arrayfun(@(k) 1:s(k), 2:numel(s), 'UniformOutput', false)];
+    out(idx{:}) = v;
+    v = out;
 end
 )MATLAB";
 

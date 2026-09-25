@@ -290,6 +290,36 @@ single `.mcap` file.
 | `--keep-large` | Don't auto-skip camera/lidar/radar topics |
 | `--large-msg-kb N` | Retire a topic if any message exceeds N KB (default: 1024) |
 
+## Arrays of messages in `.mat` output
+
+A variable-length array of messages (e.g. `RadarObject[] objects`) holds a
+different number of elements in each message. In the `.mat` output it becomes a
+single struct whose fields are arrays with one row per message and one column
+per list position, NaN-padded out to the longest list seen in the topic:
+
+```matlab
+r = load('mat/cascadia_data_radar_objects.mat').cascadia_data_radar_objects;
+r.objects.dx                              % [n x W]: row = message, column = list position
+plot(r.t, r.objects.dx, '.')              % every object, every message
+n_obj = sum(~isnan(r.objects.id), 2);     % entries per message
+```
+
+Each field keeps its own shape and gains the list dimension after it:
+
+| Field inside the list element | Shape |
+|---|---|
+| scalar | `[n x W]` |
+| fixed array `T[M]` | `[n x M x W]` |
+| dynamic array `T[]` | `[n x D x W]` (D = longest seen, NaN-padded) |
+| string / string array | `{n x W}` cell |
+| nested message | struct of the above |
+| array of messages inside the element | `[n x W_inner x W_outer]` |
+
+Column `k` is the k-th entry of each message's list, not a persistent
+identity — if the list's elements carry an id field, follow that instead. Lists
+longer than `--msg-max` are dropped (the log lists them). CSV output flattens
+the same data into `objects.e0.dx, objects.e1.dx, …` columns.
+
 ## Large topics: split parts and restitching
 
 A topic whose decoded data would not fit the memory budget (e.g. a CAN bus

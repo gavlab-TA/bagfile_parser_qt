@@ -22,6 +22,11 @@ struct CollectedData
 
     std::vector<std::pair<std::string, CollectedData>> children;
 
+    // A padded dynamic message array: children are the list positions e0..eN,
+    // each an identically shaped STRUCT. Written to .mat as one struct of
+    // stacked arrays rather than one struct per position.
+    bool is_list = false;
+
     CollectedData* child(const std::string& name);
 };
 
