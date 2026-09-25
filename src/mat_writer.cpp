@@ -49,6 +49,7 @@ void allocateCollectors(CollectedData& data, const FieldDesc& desc, size_t n)
         if (field.padded_max > 0 && !field.is_primitive_type)
         {
             child_data.kind = CollectedData::STRUCT;
+            child_data.is_list = true;
             FieldDesc elem_desc = makeElemDesc(field);
             for (int i = 0; i < field.padded_max; i++)
             {
@@ -344,17 +345,197 @@ static matvar_t* makeScalarArray(const std::string& name, const std::vector<doub
     return Mat_VarCreate(name.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, 2, dims, const_cast<double*>(vals.data()), 0);
 }
 
+static matvar_t* makeCharVar(const std::string& str)
+{
+    size_t sdims[2] = {1, str.size()};
+    return Mat_VarCreate(nullptr, MAT_C_CHAR, MAT_T_UTF8, 2, sdims, const_cast<char*>(str.c_str()), 0);
+}
+
 static matvar_t* makeStringCell(const std::string& name, const std::vector<std::string>& strs)
 {
     size_t dims[2] = {1, strs.size()};
     matvar_t* cell = Mat_VarCreate(name.c_str(), MAT_C_CELL, MAT_T_CELL, 2, dims, nullptr, 0);
     for (size_t i = 0; i < strs.size(); i++)
     {
-        size_t sdims[2] = {1, strs[i].size()};
-        matvar_t* s = Mat_VarCreate(nullptr, MAT_C_CHAR, MAT_T_UTF8, 2, sdims, const_cast<char*>(strs[i].c_str()), 0);
-        Mat_VarSetCell(cell, static_cast<int>(i), s);
+        Mat_VarSetCell(cell, static_cast<int>(i), makeCharVar(strs[i]));
     }
     return cell;
+}
+
+// Build a 1x1 struct from already-built fields; takes ownership of them.
+static matvar_t* makeStruct(const std::string& name, const std::vector<std::pair<std::string, matvar_t*>>& built)
+{
+    if (built.empty())
+    {
+        return nullptr;
+    }
+    size_t dims[2] = {1, 1};
+    matvar_t* s = createStructVar(name.c_str(), 2, dims);
+    for (const std::pair<std::string, matvar_t*>& fv : built)
+    {
+        Mat_VarAddStructField(s, fv.first.c_str());
+        Mat_VarSetStructFieldByName(s, fv.first.c_str(), 0, fv.second);
+    }
+    return s;
+}
+
+// --- Padded message arrays ---
+//
+// A list node (CollectedData::is_list) holds one identically shaped struct per
+// list position. It is written as a single struct whose leaves are stacked
+// across positions: each leaf keeps its own dims and gains the list dims after
+// them, innermost list first.
+//
+//   scalar                     [n x W]
+//   fixed array [M]            [n x M x W]
+//   dynamic array (max len D)  [n x D x W]        NaN-padded
+//   string / string array      {n x W} cell
+//   list nested in a list      [n x W_inner x W_outer]
+//
+// `nodes` is the same field taken from every position of every enclosing list,
+// ordered column-major over `list_dims`, so leaf data can be copied straight
+// into MATLAB's column-major layout without an intermediate per-position copy.
+
+static size_t product(const std::vector<size_t>& dims)
+{
+    size_t p = 1;
+    for (size_t d : dims) p *= d;
+    return p;
+}
+
+static matvar_t* makeNdDouble(const std::string& name, const std::vector<size_t>& dims, std::vector<double>& data)
+{
+    std::vector<size_t> d = dims;
+    return Mat_VarCreate(name.c_str(), MAT_C_DOUBLE, MAT_T_DOUBLE, static_cast<int>(d.size()), d.data(),
+                         data.empty() ? nullptr : data.data(), 0);
+}
+
+static std::vector<size_t> withListDims(std::vector<size_t> dims, const std::vector<size_t>& list_dims)
+{
+    dims.insert(dims.end(), list_dims.begin(), list_dims.end());
+    return dims;
+}
+
+static matvar_t* stackedToMatvar(const std::string& name, const std::vector<const CollectedData*>& nodes, const std::vector<size_t>& list_dims)
+{
+    const CollectedData& first = *nodes[0];
+    const size_t groups = nodes.size();
+
+    switch (first.kind)
+    {
+        case CollectedData::SKIPPED:
+            return nullptr;
+
+        case CollectedData::SCALAR:
+        {
+            size_t n = first.values.size();
+            std::vector<double> out(n * groups);
+            for (size_t g = 0; g < groups; g++)
+            {
+                std::copy(nodes[g]->values.begin(), nodes[g]->values.end(), out.begin() + g * n);
+            }
+            return makeNdDouble(name, withListDims({n}, list_dims), out);
+        }
+
+        case CollectedData::FIXED_ARRAY:
+        {
+            size_t m = static_cast<size_t>(first.width);
+            size_t n = first.values.size() / m;
+            std::vector<double> out(n * m * groups);
+            for (size_t g = 0; g < groups; g++)
+            {
+                const std::vector<double>& v = nodes[g]->values;
+                for (size_t i = 0; i < n; i++)
+                {
+                    for (size_t j = 0; j < m; j++)
+                    {
+                        out[i + n * (j + m * g)] = v[i * m + j];
+                    }
+                }
+            }
+            return makeNdDouble(name, withListDims({n, m}, list_dims), out);
+        }
+
+        case CollectedData::DYN_ARRAY:
+        {
+            size_t n = first.dyn_arrays.size();
+            size_t d = 0;
+            for (const CollectedData* node : nodes)
+            {
+                for (const std::vector<double>& a : node->dyn_arrays) d = std::max(d, a.size());
+            }
+            std::vector<double> out(n * d * groups, std::nan(""));
+            for (size_t g = 0; g < groups; g++)
+            {
+                for (size_t i = 0; i < n; i++)
+                {
+                    const std::vector<double>& a = nodes[g]->dyn_arrays[i];
+                    for (size_t j = 0; j < a.size(); j++)
+                    {
+                        out[i + n * (j + d * g)] = a[j];
+                    }
+                }
+            }
+            return makeNdDouble(name, withListDims({n, d}, list_dims), out);
+        }
+
+        case CollectedData::STRING:
+        case CollectedData::STRING_ARRAY:
+        {
+            bool is_arr = (first.kind == CollectedData::STRING_ARRAY);
+            size_t n = is_arr ? first.string_arrays.size() : first.strings.size();
+            std::vector<size_t> dims = withListDims({n}, list_dims);
+            matvar_t* cell = Mat_VarCreate(name.c_str(), MAT_C_CELL, MAT_T_CELL, static_cast<int>(dims.size()), dims.data(), nullptr, 0);
+            for (size_t g = 0; g < groups; g++)
+            {
+                for (size_t i = 0; i < n; i++)
+                {
+                    matvar_t* v = is_arr ? makeStringCell("", nodes[g]->string_arrays[i])
+                                         : makeCharVar(nodes[g]->strings[i]);
+                    Mat_VarSetCell(cell, static_cast<int>(i + n * g), v);
+                }
+            }
+            return cell;
+        }
+
+        case CollectedData::STRUCT:
+        {
+            if (first.is_list)
+            {
+                // Descend into the positions: the new list dim is innermost, so it
+                // varies fastest in `inner`.
+                std::vector<const CollectedData*> inner;
+                inner.reserve(groups * first.children.size());
+                for (const CollectedData* node : nodes)
+                {
+                    for (const std::pair<std::string, CollectedData>& pos : node->children)
+                    {
+                        inner.push_back(&pos.second);
+                    }
+                }
+                std::vector<size_t> inner_dims = withListDims({first.children.size()}, list_dims);
+                return stackedToMatvar(name, inner, inner_dims);
+            }
+
+            std::vector<std::pair<std::string, matvar_t*>> built;
+            std::vector<const CollectedData*> field_nodes(groups);
+            for (size_t c = 0; c < first.children.size(); c++)
+            {
+                if (first.children[c].second.kind == CollectedData::SKIPPED) continue;
+                for (size_t g = 0; g < groups; g++)
+                {
+                    field_nodes[g] = &nodes[g]->children[c].second;
+                }
+                matvar_t* field_var = stackedToMatvar(first.children[c].first, field_nodes, list_dims);
+                if (field_var)
+                {
+                    built.emplace_back(first.children[c].first, field_var);
+                }
+            }
+            return makeStruct(name, built);
+        }
+    }
+    return nullptr;
 }
 
 static matvar_t* collectedToMatvar(const std::string& name, const CollectedData& data)
@@ -414,6 +595,10 @@ static matvar_t* collectedToMatvar(const std::string& name, const CollectedData&
 
         case CollectedData::STRUCT:
         {
+            if (data.is_list)
+            {
+                return stackedToMatvar(name, {&data}, {});
+            }
             std::vector<std::pair<std::string, matvar_t*>> built;
             for (const std::pair<std::string, CollectedData>& entry : data.children)
             {
@@ -424,19 +609,7 @@ static matvar_t* collectedToMatvar(const std::string& name, const CollectedData&
                     built.emplace_back(entry.first, field_var);
                 }
             }
-            if (built.empty())
-            {
-                return nullptr;
-            }
-
-            size_t dims[2] = {1, 1};
-            matvar_t* s = createStructVar(name.c_str(), 2, dims);
-            for (const std::pair<std::string, matvar_t*>& fv : built)
-            {
-                Mat_VarAddStructField(s, fv.first.c_str());
-                Mat_VarSetStructFieldByName(s, fv.first.c_str(), 0, fv.second);
-            }
-            return s;
+            return makeStruct(name, built);
         }
     }
     return nullptr;
