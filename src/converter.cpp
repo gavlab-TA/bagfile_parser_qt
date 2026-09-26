@@ -9,6 +9,7 @@
 
 #define MCAP_IMPLEMENTATION
 #include <mcap/reader.hpp>
+#include <mcap/writer.hpp>   // implementation is also used by reindex.cpp
 
 #include "bagfile_parser_qt/converter.hpp"
 #include "bagfile_parser_qt/schema_parser.hpp"
@@ -178,7 +179,7 @@ static void purgeExisting(const std::string& base_path)
     }
 }
 
-static std::vector<std::string> findMcapFiles(const std::string& path)
+std::vector<std::string> findMcapFiles(const std::string& path)
 {
     std::vector<std::string> files;
     if (fs::is_regular_file(path) && fs::path(path).extension() == ".mcap")
@@ -1308,7 +1309,8 @@ void convert(const ConvertOptions& opts, const ConvertCallbacks& cbs)
     {
         fits = false;
         logMessage(cbs, "Bag size could not be estimated (missing MCAP summary) — "
-                        "using binary-spill mode (safe).");
+                        "using binary-spill mode (safe). A bag without an index is read by a full "
+                        "sequential scan; --reindex writes an indexed copy.");
     }
     else
     {

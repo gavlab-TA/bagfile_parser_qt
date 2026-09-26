@@ -247,6 +247,13 @@ lidar topics — `Image`, `CompressedImage`, `CompressedVideo`, `PointCloud`,
 says how many are hidden. Uncheck it to list, select and export them (the GUI
 equivalent of `--keep-large`, which also lifts the `--large-msg-kb` limit).
 
+Opening a bag whose MCAP index is missing — usually a recording that was cut off —
+asks what to do: **Reindex** writes an indexed, zstd-compressed copy of everything
+readable to `<bag>_reindexed` and loads that (the original is not changed, and a
+complete copy from an earlier reindex is reused); **Load without index** reads it with
+a full sequential scan, as before; **Cancel** (or Esc) does neither. The CLI
+equivalent is `--reindex`.
+
 ### CLI
 
 The bag path can be a single `.mcap` file or a directory of split `.mcap`
@@ -286,6 +293,7 @@ single `.mcap` file.
 | Flag | Description |
 |------|-------------|
 | `-l, --list-topics` | List topics and exit |
+| `--reindex` | Write an indexed copy of a bag whose MCAP index is missing (e.g. a cut-off recording) to `<bag>_reindexed` (or `-o DIR`) and exit; the original is not modified. The copy is zstd-compressed, often much smaller than the original |
 | `-t, --topics T1 T2 ...` | Topics to convert (default: all) |
 | `-o, --output DIR` | Output directory (default: bag folder) |
 | `-j, --threads N` | Worker threads (default: hw cores) |

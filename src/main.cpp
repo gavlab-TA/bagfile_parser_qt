@@ -1,5 +1,6 @@
 #include "bagfile_parser_qt/converter.hpp"
 #include "bagfile_parser_qt/gui.hpp"
+#include "bagfile_parser_qt/reindex.hpp"
 
 #include <QtWidgets/QApplication>
 
@@ -19,6 +20,9 @@ static void printUsage()
         "\n"
         "CLI options:\n"
         "  -l, --list-topics         List topics and exit\n"
+        "  --reindex                 Write an indexed copy of a bag whose MCAP index is missing\n"
+        "                            (e.g. a cut-off recording) to <bag>_reindexed, or to -o DIR,\n"
+        "                            and exit. The original is not modified.\n"
         "  -t, --topics T1 T2 ...    Topics to convert (default: all)\n"
         "  -o, --output DIR          Output directory (default: bag folder)\n"
         "  -j, --threads N           Worker threads (default: hw cores)\n"
@@ -39,6 +43,7 @@ static int runCli(int argc, char** argv)
     std::vector<std::string> topics;
     int threads = 0;
     bool list_topics_flag = false;
+    bool reindex_flag = false;
     OutputFormat format = OutputFormat::MAT;
     int opts_byte_max = 256;
     int opts_msg_max = 20;
@@ -53,6 +58,10 @@ static int runCli(int argc, char** argv)
         if (a == "-l" || a == "--list-topics")
         {
             list_topics_flag = true;
+        }
+        else if (a == "--reindex")
+        {
+            reindex_flag = true;
         }
         else if (a == "-o" || a == "--output")
         {
@@ -125,6 +134,30 @@ static int runCli(int argc, char** argv)
             printUsage();
             return 1;
         }
+    }
+
+    if (reindex_flag)
+    {
+        ConvertCallbacks rcbs;
+        rcbs.log = [](const std::string& m)
+        {
+            std::cerr << m << "\n";
+        };
+        std::string out = output_dir.empty() ? defaultReindexDir(bag_path) : output_dir;
+        std::vector<std::string> missing = findMissingSummaries(bag_path);
+        if (missing.empty())
+        {
+            std::cerr << "Every .mcap in " << bag_path << " already has an index; nothing to do.\n";
+            return 0;
+        }
+        ReindexResult r = reindexBag(bag_path, out, rcbs);
+        if (!r.ok)
+        {
+            std::cerr << "Reindex failed: " << r.error << "\n";
+            return 1;
+        }
+        std::cerr << "Indexed copy: " << r.output_dir << "\n";
+        return 0;
     }
 
     if (list_topics_flag)
