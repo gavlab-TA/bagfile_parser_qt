@@ -17,6 +17,10 @@ std::vector<std::string> findMissingSummaries(const std::string& bag_path);
 
 std::vector<TopicSummary> listTopics(const std::string& bag_path);
 
+// Camera / lidar message types (Image, PointCloud2, ...) that are skipped unless
+// skip_large_topics is off (CLI --keep-large; GUI "Skip large topics" unchecked).
+bool isLargeSensorType(const std::string& msgtype);
+
 enum class OutputFormat { MAT, CSV, BOTH };
 
 struct ConvertOptions

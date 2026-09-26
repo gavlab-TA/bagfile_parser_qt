@@ -59,11 +59,15 @@ private slots:
     void browseBag();
     void browseOutput();
     void chooseTopics();
+    void onSkipLargeToggled(bool skip);
     void startConvert();
     void onLog(const QString& msg);
     void onConvertFinished(bool success, const QString& error);
 
 private:
+    void loadBag(const QString& dir);
+    std::vector<TopicSummary> visibleTopics() const;
+    void updateTopicsLabel();
     void updateStatus();
     bool readyToConvert() const;
 
@@ -76,6 +80,7 @@ private:
     QLabel* output_label_;
 
     QPushButton* topics_button_;
+    QCheckBox* skip_large_box_;
     QLabel* topics_label_;
 
     QCheckBox* mat_box_;

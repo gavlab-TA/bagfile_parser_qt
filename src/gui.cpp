@@ -146,6 +146,11 @@ MainWindow::MainWindow()
 
     this->topics_button_ = new QPushButton("Select Topics");
     this->topics_button_->setEnabled(false);
+    this->skip_large_box_ = new QCheckBox("Skip large topics");
+    this->skip_large_box_->setChecked(true);
+    this->skip_large_box_->setToolTip(
+        "Hide camera and lidar topics (Image, CompressedImage, CompressedVideo, PointCloud,\n"
+        "PointCloud2) and don't export them. Uncheck to list and export them (CLI --keep-large).");
     this->topics_label_ = new QLabel("<no bag loaded>");
     this->topics_label_->setAlignment(Qt::AlignCenter);
 
@@ -181,7 +186,8 @@ MainWindow::MainWindow()
 
     QGridLayout* top_grid = new QGridLayout;
     top_grid->addWidget(this->topics_button_, 0, 0);
-    top_grid->addWidget(this->topics_label_, 1, 0, Qt::AlignCenter);
+    top_grid->addWidget(this->skip_large_box_, 1, 0, Qt::AlignCenter);
+    top_grid->addWidget(this->topics_label_, 2, 0, Qt::AlignCenter);
 
     QHBoxLayout* opts_row = new QHBoxLayout;
     opts_row->addWidget(new QLabel("Output:"));
@@ -204,6 +210,7 @@ MainWindow::MainWindow()
     QObject::connect(this->bag_button_, &QPushButton::clicked, this, &MainWindow::browseBag);
     QObject::connect(this->output_button_, &QPushButton::clicked, this, &MainWindow::browseOutput);
     QObject::connect(this->topics_button_, &QPushButton::clicked, this, &MainWindow::chooseTopics);
+    QObject::connect(this->skip_large_box_, &QCheckBox::toggled, this, &MainWindow::onSkipLargeToggled);
     QObject::connect(this->convert_button_, &QPushButton::clicked, this, &MainWindow::startConvert);
 }
 
@@ -214,7 +221,11 @@ void MainWindow::browseBag()
     {
         return;
     }
+    this->loadBag(dir);
+}
 
+void MainWindow::loadBag(const QString& dir)
+{
     this->bag_path_ = dir.toStdString();
     this->bag_label_->setText(dir);
 
@@ -238,6 +249,8 @@ void MainWindow::browseBag()
         {
             this->log_->appendPlainText("Bag load cancelled — missing summary section.");
             this->all_topics_.clear();
+            this->selected_topics_.clear();
+            this->updateTopicsLabel();
             this->updateStatus();
             return;
         }
@@ -255,24 +268,23 @@ void MainWindow::browseBag()
         this->all_topics_.clear();
     }
 
-    if (this->all_topics_.empty())
+    // Start with every topic the list offers selected.
+    this->selected_topics_.clear();
+    for (const TopicSummary& t : this->visibleTopics())
     {
-        this->topics_label_->setText("<no topics found>");
-        this->topics_button_->setEnabled(false);
+        this->selected_topics_.push_back(t.topic);
     }
-    else
+    if (!this->all_topics_.empty())
     {
-        this->selected_topics_.clear();
-        for (const TopicSummary& t : this->all_topics_)
+        size_t hidden = this->all_topics_.size() - this->selected_topics_.size();
+        QString msg = QString("Found %1 topics.").arg(this->all_topics_.size());
+        if (hidden > 0)
         {
-            this->selected_topics_.push_back(t.topic);
+            msg += QString(" %1 large (camera/lidar) hidden by \"Skip large topics\".").arg(hidden);
         }
-        this->topics_label_->setText(QString("%1 / %2 selected")
-                                   .arg(this->selected_topics_.size())
-                                   .arg(this->all_topics_.size()));
-        this->topics_button_->setEnabled(true);
-        this->log_->appendPlainText(QString("Found %1 topics.").arg(this->all_topics_.size()));
+        this->log_->appendPlainText(msg);
     }
+    this->updateTopicsLabel();
     this->updateStatus();
 }
 
@@ -294,15 +306,83 @@ void MainWindow::chooseTopics()
     {
         return;
     }
-    TopicDialog dlg(this->all_topics_, this->selected_topics_, this);
+    TopicDialog dlg(this->visibleTopics(), this->selected_topics_, this);
     if (dlg.exec() == QDialog::Accepted)
     {
         this->selected_topics_ = dlg.getSelected();
-        this->topics_label_->setText(QString("%1 / %2 selected")
-                                   .arg(this->selected_topics_.size())
-                                   .arg(this->all_topics_.size()));
+        this->updateTopicsLabel();
         this->updateStatus();
     }
+}
+
+// The topics the user can pick from: everything, minus camera/lidar topics
+// while "Skip large topics" is checked (the converter would drop them anyway).
+std::vector<TopicSummary> MainWindow::visibleTopics() const
+{
+    std::vector<TopicSummary> out;
+    for (const TopicSummary& t : this->all_topics_)
+    {
+        if (!this->skip_large_box_->isChecked() || !isLargeSensorType(t.msgtype))
+        {
+            out.push_back(t);
+        }
+    }
+    return out;
+}
+
+void MainWindow::onSkipLargeToggled(bool skip)
+{
+    if (skip)
+    {
+        // Hidden topics can't stay selected.
+        std::vector<std::string> kept;
+        std::set<std::string> visible;
+        for (const TopicSummary& t : this->visibleTopics()) visible.insert(t.topic);
+        for (const std::string& name : this->selected_topics_)
+        {
+            if (visible.count(name)) kept.push_back(name);
+        }
+        this->selected_topics_ = kept;
+    }
+    else
+    {
+        // Unchecking means "include them": select the large topics that just appeared.
+        std::set<std::string> sel(this->selected_topics_.begin(), this->selected_topics_.end());
+        for (const TopicSummary& t : this->all_topics_)
+        {
+            if (isLargeSensorType(t.msgtype) && !sel.count(t.topic))
+            {
+                this->selected_topics_.push_back(t.topic);
+            }
+        }
+    }
+    this->updateTopicsLabel();
+    this->updateStatus();
+}
+
+void MainWindow::updateTopicsLabel()
+{
+    if (this->bag_path_.empty())
+    {
+        this->topics_label_->setText("<no bag loaded>");
+        this->topics_button_->setEnabled(false);
+        return;
+    }
+    if (this->all_topics_.empty())
+    {
+        this->topics_label_->setText("<no topics found>");
+        this->topics_button_->setEnabled(false);
+        return;
+    }
+    std::vector<TopicSummary> visible = this->visibleTopics();
+    size_t hidden = this->all_topics_.size() - visible.size();
+    QString text = QString("%1 / %2 selected").arg(this->selected_topics_.size()).arg(visible.size());
+    if (hidden > 0)
+    {
+        text += QString("  (%1 large hidden)").arg(hidden);
+    }
+    this->topics_label_->setText(text);
+    this->topics_button_->setEnabled(!visible.empty() && this->worker_thread_ == nullptr);
 }
 
 bool MainWindow::readyToConvert() const
@@ -321,6 +401,10 @@ void MainWindow::updateStatus()
     else if (this->all_topics_.empty())
     {
         this->status_label_->setText("No topics found.");
+    }
+    else if (this->visibleTopics().empty())
+    {
+        this->status_label_->setText("Only large topics in this bag. Uncheck \"Skip large topics\" to list them.");
     }
     else if (this->output_path_.empty())
     {
@@ -349,6 +433,7 @@ void MainWindow::startConvert()
     opts.output_dir = this->output_path_;
     opts.topics = this->selected_topics_;
     opts.threads = this->threads_spin_->value();
+    opts.skip_large_topics = this->skip_large_box_->isChecked();
     bool want_mat = this->mat_box_->isChecked();
     bool want_csv = this->csv_box_->isChecked();
     if (!want_mat && !want_csv)
@@ -366,6 +451,7 @@ void MainWindow::startConvert()
     this->bag_button_->setEnabled(false);
     this->output_button_->setEnabled(false);
     this->topics_button_->setEnabled(false);
+    this->skip_large_box_->setEnabled(false);
 
     this->worker_thread_ = new QThread(this);
     this->worker_ = new ConvertWorker(opts);
@@ -393,7 +479,8 @@ void MainWindow::onConvertFinished(bool success, const QString& error)
     this->worker_ = nullptr;
     this->bag_button_->setEnabled(true);
     this->output_button_->setEnabled(true);
-    this->topics_button_->setEnabled(true);
+    this->skip_large_box_->setEnabled(true);
+    this->updateTopicsLabel();
     if (success)
     {
         this->status_label_->setText("Done.");
