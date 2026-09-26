@@ -241,6 +241,12 @@ needed.
 ./bagfile_parser_qt
 ```
 
+**Skip large topics** (under *Select Topics*, checked by default) hides camera and
+lidar topics — `Image`, `CompressedImage`, `CompressedVideo`, `PointCloud`,
+`PointCloud2` — from the topic list and doesn't export them; the count next to it
+says how many are hidden. Uncheck it to list, select and export them (the GUI
+equivalent of `--keep-large`, which also lifts the `--large-msg-kb` limit).
+
 ### CLI
 
 The bag path can be a single `.mcap` file or a directory of split `.mcap`

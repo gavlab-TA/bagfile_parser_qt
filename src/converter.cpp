@@ -305,7 +305,7 @@ struct TopicData
     }
 };
 
-static bool isLargeSensorType(const std::string& msgtype)
+bool isLargeSensorType(const std::string& msgtype)
 {
     std::string leaf = msgtype;
     std::string::size_type slash = msgtype.rfind('/');
