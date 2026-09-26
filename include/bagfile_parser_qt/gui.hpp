@@ -49,6 +49,24 @@ private:
     std::atomic<bool> cancel_{false};
 };
 
+class ReindexWorker : public QObject
+{
+    Q_OBJECT
+public:
+    ReindexWorker(std::string bag_path, std::string out_dir);
+
+public slots:
+    void run();
+
+signals:
+    void logMessage(QString msg);
+    void finished(bool success, QString error, QString out_dir);
+
+private:
+    std::string bag_path_;
+    std::string out_dir_;
+};
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -63,9 +81,12 @@ private slots:
     void startConvert();
     void onLog(const QString& msg);
     void onConvertFinished(bool success, const QString& error);
+    void onReindexFinished(bool success, const QString& error, const QString& out_dir);
 
 private:
     void loadBag(const QString& dir);
+    void startReindex(const QString& out_dir);
+    void setBusy(bool busy);
     std::vector<TopicSummary> visibleTopics() const;
     void updateTopicsLabel();
     void updateStatus();

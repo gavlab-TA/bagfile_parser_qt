@@ -67,6 +67,7 @@ add_executable(bagfile_parser_qt
     src/cdr_reader.cpp
     src/mat_writer.cpp
     src/csv_writer.cpp
+    src/reindex.cpp
     src/gui.cpp
     include/bagfile_parser_qt/gui.hpp
 )

@@ -1,4 +1,5 @@
 #include "bagfile_parser_qt/gui.hpp"
+#include "bagfile_parser_qt/reindex.hpp"
 
 #include <QtCore/QFileInfo>
 #include <QtCore/QString>
@@ -16,6 +17,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
+#include <filesystem>
 #include <set>
 #include <utility>
 
@@ -121,6 +123,31 @@ void ConvertWorker::run()
     {
         emit finished(false, "unknown error");
     }
+}
+
+// ----- ReindexWorker -----
+
+ReindexWorker::ReindexWorker(std::string bag_path, std::string out_dir)
+    : bag_path_(std::move(bag_path)), out_dir_(std::move(out_dir)) {}
+
+void ReindexWorker::run()
+{
+    ConvertCallbacks cbs;
+    cbs.log = [this](const std::string& m)
+    {
+        emit logMessage(QString::fromStdString(m));
+    };
+    ReindexResult r;
+    try
+    {
+        r = reindexBag(this->bag_path_, this->out_dir_, cbs);
+    }
+    catch (const std::exception& e)
+    {
+        r.ok = false;
+        r.error = e.what();
+    }
+    emit finished(r.ok, QString::fromStdString(r.error), QString::fromStdString(r.output_dir));
 }
 
 // ----- MainWindow -----
@@ -234,18 +261,37 @@ void MainWindow::loadBag(const QString& dir)
     if (!missing.empty())
     {
         QString file_list;
+        uintmax_t missing_bytes = 0;
         for (const std::string& f : missing)
         {
             file_list += QString::fromStdString(f) + "\n";
+            std::error_code ec;
+            uintmax_t sz = std::filesystem::file_size(f, ec);
+            if (!ec) missing_bytes += sz;
         }
-        QMessageBox::StandardButton reply = QMessageBox::question(
-            this, "Missing MCAP Summary",
-            QString("The following MCAP file(s) are missing their summary/index section:\n\n%1\n"
-                    "This can happen if recording was interrupted. Loading will fall back to a "
-                    "full sequential scan, which may be slow on large files.\n\n"
-                    "Continue with fallback scan?").arg(file_list),
-            QMessageBox::Yes | QMessageBox::No);
-        if (reply == QMessageBox::No)
+        QString out_dir = QString::fromStdString(defaultReindexDir(this->bag_path_));
+        QMessageBox box(QMessageBox::Question, "Missing MCAP Index",
+            QString("These MCAP file(s) have no summary/index section, usually because the "
+                    "recording was cut off:\n\n%1\n"
+                    "Reindex: write an indexed, zstd-compressed copy of everything readable to\n"
+                    "%2\nand load that (up to %3 GB; the original is not changed).\n\n"
+                    "Load without index: read it with a full sequential scan, which is slow on "
+                    "large files and repeats for every conversion.")
+                .arg(file_list, out_dir)
+                .arg(static_cast<double>(missing_bytes) / 1e9, 0, 'f', 1),
+            QMessageBox::NoButton, this);
+        QPushButton* reindex_btn = box.addButton("Reindex", QMessageBox::AcceptRole);
+        QPushButton* scan_btn = box.addButton("Load without index", QMessageBox::ActionRole);
+        QPushButton* cancel_btn = box.addButton(QMessageBox::Cancel);
+        box.setDefaultButton(reindex_btn);
+        box.setEscapeButton(cancel_btn);   // Esc and the window's close button cancel too
+        box.exec();
+        if (box.clickedButton() == reindex_btn)
+        {
+            this->startReindex(out_dir);
+            return;
+        }
+        if (box.clickedButton() != scan_btn)
         {
             this->log_->appendPlainText("Bag load cancelled — missing summary section.");
             this->all_topics_.clear();
@@ -286,6 +332,64 @@ void MainWindow::loadBag(const QString& dir)
     }
     this->updateTopicsLabel();
     this->updateStatus();
+}
+
+void MainWindow::startReindex(const QString& out_dir)
+{
+    this->all_topics_.clear();
+    this->selected_topics_.clear();
+    this->log_->appendPlainText("=== Reindexing into " + out_dir + " ===");
+    this->status_label_->setText("Reindexing...");
+    this->topics_label_->setText("<reindexing>");
+
+    this->worker_thread_ = new QThread(this);
+    ReindexWorker* worker = new ReindexWorker(this->bag_path_, out_dir.toStdString());
+    worker->moveToThread(this->worker_thread_);
+    this->setBusy(true);
+
+    QObject::connect(this->worker_thread_, &QThread::started, worker, &ReindexWorker::run);
+    QObject::connect(worker, &ReindexWorker::logMessage, this, &MainWindow::onLog);
+    QObject::connect(worker, &ReindexWorker::finished, this, &MainWindow::onReindexFinished);
+    QObject::connect(worker, &ReindexWorker::finished, this->worker_thread_, &QThread::quit);
+    QObject::connect(worker, &ReindexWorker::finished, worker, &QObject::deleteLater);
+    QObject::connect(this->worker_thread_, &QThread::finished, this->worker_thread_, &QObject::deleteLater);
+    this->worker_thread_->start();
+}
+
+void MainWindow::onReindexFinished(bool success, const QString& error, const QString& out_dir)
+{
+    this->worker_thread_ = nullptr;
+    this->setBusy(false);
+    if (success)
+    {
+        this->log_->appendPlainText("Indexed copy ready: " + out_dir);
+        this->loadBag(out_dir);
+        return;
+    }
+    this->log_->appendPlainText("Reindex failed: " + error);
+    QMessageBox::warning(this, "Reindex failed", error);
+    this->bag_path_.clear();
+    this->bag_label_->setText("<none>");
+    this->updateTopicsLabel();
+    this->updateStatus();
+}
+
+// Locks the controls while a conversion or reindex runs in the background.
+void MainWindow::setBusy(bool busy)
+{
+    this->bag_button_->setEnabled(!busy);
+    this->output_button_->setEnabled(!busy);
+    this->skip_large_box_->setEnabled(!busy);
+    if (busy)
+    {
+        this->topics_button_->setEnabled(false);
+        this->convert_button_->setEnabled(false);
+    }
+    else
+    {
+        this->updateTopicsLabel();
+        this->updateStatus();
+    }
 }
 
 void MainWindow::browseOutput()
@@ -447,13 +551,9 @@ void MainWindow::startConvert()
                                          : OutputFormat::MAT;
 
     this->log_->appendPlainText("=== Converting ===");
-    this->convert_button_->setEnabled(false);
-    this->bag_button_->setEnabled(false);
-    this->output_button_->setEnabled(false);
-    this->topics_button_->setEnabled(false);
-    this->skip_large_box_->setEnabled(false);
 
     this->worker_thread_ = new QThread(this);
+    this->setBusy(true);
     this->worker_ = new ConvertWorker(opts);
     this->worker_->moveToThread(this->worker_thread_);
 
@@ -477,10 +577,7 @@ void MainWindow::onConvertFinished(bool success, const QString& error)
 {
     this->worker_thread_ = nullptr;
     this->worker_ = nullptr;
-    this->bag_button_->setEnabled(true);
-    this->output_button_->setEnabled(true);
-    this->skip_large_box_->setEnabled(true);
-    this->updateTopicsLabel();
+    this->setBusy(false);
     if (success)
     {
         this->status_label_->setText("Done.");

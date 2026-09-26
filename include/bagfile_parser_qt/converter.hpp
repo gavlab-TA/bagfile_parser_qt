@@ -12,6 +12,9 @@ struct TopicSummary
     size_t count = 0;
 };
 
+// .mcap files of a bag: the file itself, or every .mcap in the directory, sorted.
+std::vector<std::string> findMcapFiles(const std::string& path);
+
 // Returns list of files in bag_path that are missing their MCAP summary section.
 std::vector<std::string> findMissingSummaries(const std::string& bag_path);
 
