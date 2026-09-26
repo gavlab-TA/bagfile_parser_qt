@@ -718,9 +718,8 @@ static bool isByteP(PrimitiveType p)
 }
 
 static const int kMaxPadDepth = 3;
-static const uint64_t kMaxPadElems = 2000000;
 
-static FieldDesc adjustField(const FieldDesc& orig, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, const std::string& path, int pad_depth, uint64_t mult, size_t msg_count)
+static FieldDesc adjustField(const FieldDesc& orig, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, uint64_t max_pad_elems, const std::string& path, int pad_depth, uint64_t mult, size_t msg_count)
 {
     FieldDesc result = orig;
     std::unordered_map<std::string, uint32_t>::const_iterator it = stats.find(path);
@@ -735,13 +734,36 @@ static FieldDesc adjustField(const FieldDesc& orig, const std::unordered_map<std
         {
             result.skip = false;
         }
+        else if (pad_depth > 0)
+        {
+            result.skip_reason = "byte array inside a message array";
+        }
+        else
+        {
+            result.skip_reason = "longer than --byte-max " + std::to_string(byte_threshold);
+        }
     }
     else if (orig.skip && !orig.is_primitive_type && orig.array_size < 0)
     {
         uint64_t instances = static_cast<uint64_t>(msg_count) * mult * max_count;
-        if (pad_depth < kMaxPadDepth && max_count > 0 &&
-            max_count <= static_cast<uint32_t>(msg_threshold) &&
-            instances <= kMaxPadElems)
+        if (max_count == 0)
+        {
+            result.skip_reason = "always empty";
+        }
+        else if (max_count > static_cast<uint32_t>(msg_threshold))
+        {
+            result.skip_reason = "over --msg-max " + std::to_string(msg_threshold);
+        }
+        else if (pad_depth >= kMaxPadDepth)
+        {
+            result.skip_reason = "nested deeper than " + std::to_string(kMaxPadDepth) + " message arrays";
+        }
+        else if (instances > max_pad_elems)
+        {
+            result.skip_reason = "padded size " + std::to_string(instances) + " entries is over --max-pad-elems " +
+                                 std::to_string(max_pad_elems);
+        }
+        else
         {
             result.skip = false;
             result.padded_max = static_cast<int>(max_count);
@@ -756,20 +778,20 @@ static FieldDesc adjustField(const FieldDesc& orig, const std::unordered_map<std
         for (const FieldDesc& sub : orig.fields)
         {
             std::string subpath = path.empty() ? sub.name : path + "." + sub.name;
-            result.fields.push_back(adjustField(sub, stats, byte_threshold, msg_threshold, subpath, child_pad_depth, child_mult, msg_count));
+            result.fields.push_back(adjustField(sub, stats, byte_threshold, msg_threshold, max_pad_elems, subpath, child_pad_depth, child_mult, msg_count));
         }
     }
 
     return result;
 }
 
-FieldDesc adjustSchema(const FieldDesc& root_desc, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, size_t msg_count)
+FieldDesc adjustSchema(const FieldDesc& root_desc, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, uint64_t max_pad_elems, size_t msg_count)
 {
     FieldDesc result = root_desc;
     result.fields.clear();
     for (const FieldDesc& sub : root_desc.fields)
     {
-        result.fields.push_back(adjustField(sub, stats, byte_threshold, msg_threshold, sub.name, 0, 1, msg_count));
+        result.fields.push_back(adjustField(sub, stats, byte_threshold, msg_threshold, max_pad_elems, sub.name, 0, 1, msg_count));
     }
     return result;
 }

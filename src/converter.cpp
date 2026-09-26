@@ -503,7 +503,7 @@ static void processLoadedTopic(TopicData& info,
         catch (const std::exception&) {}
     }
     FieldDesc adjusted = adjustSchema(info.schema, stats,
-                                       opts.byte_array_max, opts.msg_array_max, n);
+                                       opts.byte_array_max, opts.msg_array_max, opts.max_pad_elems, n);
 
     std::function<void(const FieldDesc&, const std::string&, std::vector<std::string>&)> collect_skipped =
         [&](const FieldDesc& f, const std::string& path, std::vector<std::string>& out)
@@ -513,7 +513,9 @@ static void processLoadedTopic(TopicData& info,
             std::unordered_map<std::string, uint32_t>::const_iterator it = stats.find(path);
             uint32_t mx = (it != stats.end()) ? it->second : 0;
             std::ostringstream s;
-            s << path << " (max=" << mx << ")";
+            s << path << " (max=" << mx;
+            if (!f.skip_reason.empty()) s << ", " << f.skip_reason;
+            s << ")";
             out.push_back(s.str());
             return;
         }
@@ -1314,6 +1316,7 @@ void convert(const ConvertOptions& opts, const ConvertCallbacks& cbs)
         fits = (estimated * 3 <= available);
         std::ostringstream os;
         os << "Estimated kept payload: " << (estimated / (1024 * 1024))
+           << " MiB, in-memory needs ~3x = " << (3 * estimated / (1024 * 1024))
            << " MiB; budget: " << (available / (1024 * 1024)) << " MiB ("
            << (fits ? "fits, in-memory mode" : "too large, binary-spill mode") << ")";
         logMessage(cbs, os.str());

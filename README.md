@@ -286,6 +286,7 @@ single `.mcap` file.
 | `-f, --format mat\|csv\|both` | Output format (default: mat) |
 | `--byte-max N` | Max dynamic byte-array length to keep (default: 256) |
 | `--msg-max N` | Max dynamic message-array count to keep (default: 20) |
+| `--max-pad-elems N` | Max padded size of a message array: messages x entries (default: 2000000) |
 | `--mem-budget-mb N` | Cap aggregate in-flight data (default: auto, ~20% RAM) |
 | `--keep-large` | Don't auto-skip camera/lidar/radar topics |
 | `--large-msg-kb N` | Retire a topic if any message exceeds N KB (default: 1024) |
@@ -317,7 +318,8 @@ Each field keeps its own shape and gains the list dimension after it:
 
 Column `k` is the k-th entry of each message's list, not a persistent
 identity — if the list's elements carry an id field, follow that instead. Lists
-longer than `--msg-max` are dropped (the log lists them). CSV output flattens
+longer than `--msg-max`, or whose padded size (messages x entries) exceeds
+`--max-pad-elems`, are dropped; the log lists them and says which limit applied. CSV output flattens
 the same data into `objects.e0.dx, objects.e1.dx, …` columns.
 
 ## Large topics: split parts and restitching
