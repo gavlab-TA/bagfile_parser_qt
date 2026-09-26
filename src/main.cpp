@@ -25,6 +25,8 @@ static void printUsage()
         "  -f, --format mat|csv|both Output format (default: mat)\n"
         "  --byte-max N              Max dynamic byte-array length to keep (default: 256)\n"
         "  --msg-max N               Max dynamic message-array count to keep (default: 20)\n"
+        "  --max-pad-elems N         Max padded size of a message array, messages x entries\n"
+        "                            (default: 2000000)\n"
         "  --mem-budget-mb N         Cap aggregate in-flight data (default: auto, ~20% RAM)\n"
         "  --keep-large              Don't auto-skip camera/lidar/radar (large) topics\n"
         "  --large-msg-kb N          Retire a topic if any message exceeds N KB (default: 1024)\n";
@@ -40,6 +42,7 @@ static int runCli(int argc, char** argv)
     OutputFormat format = OutputFormat::MAT;
     int opts_byte_max = 256;
     int opts_msg_max = 20;
+    uint64_t opts_max_pad = 2000000;
     int opts_mem_budget_mb = 0;
     bool opts_skip_large = true;
     int opts_large_msg_kb = 1024;
@@ -95,6 +98,10 @@ static int runCli(int argc, char** argv)
         {
             if (++i < argc) opts_msg_max = std::stoi(argv[i]);
         }
+        else if (a == "--max-pad-elems")
+        {
+            if (++i < argc) opts_max_pad = std::stoull(argv[i]);
+        }
         else if (a == "--mem-budget-mb")
         {
             if (++i < argc) opts_mem_budget_mb = std::stoi(argv[i]);
@@ -138,6 +145,7 @@ static int runCli(int argc, char** argv)
     opts.format = format;
     opts.byte_array_max = opts_byte_max;
     opts.msg_array_max = opts_msg_max;
+    opts.max_pad_elems = opts_max_pad;
     opts.mem_budget_mb = opts_mem_budget_mb;
     opts.skip_large_topics = opts_skip_large;
     opts.large_msg_kb = opts_large_msg_kb;

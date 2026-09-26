@@ -19,6 +19,7 @@ struct FieldDesc
     int array_size = 0;
     bool skip = false;
     int padded_max = 0;
+    std::string skip_reason;  // why adjustSchema left this field skipped
 };
 
 FieldDesc parseSchema(const std::string& schema_text, const std::string& type_name);

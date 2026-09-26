@@ -1,5 +1,6 @@
 #pragma once
 #include <atomic>
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <vector>
@@ -27,6 +28,8 @@ struct ConvertOptions
     OutputFormat format = OutputFormat::MAT;
     int byte_array_max = 256;
     int msg_array_max = 20;
+    // Cap on a message array's padded size (messages x entries x enclosing entries).
+    uint64_t max_pad_elems = 2000000;
     int mem_budget_mb = 0;
     bool skip_large_topics = true;
     int large_msg_kb = 1024;

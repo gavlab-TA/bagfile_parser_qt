@@ -35,7 +35,7 @@ void fillMessage(CollectedData& data, const FieldDesc& desc, CdrReader& reader, 
 
 void scanMessage(const FieldDesc& root_desc, CdrReader& reader, std::unordered_map<std::string, uint32_t>& stats);
 
-FieldDesc adjustSchema(const FieldDesc& root_desc, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, size_t msg_count);
+FieldDesc adjustSchema(const FieldDesc& root_desc, const std::unordered_map<std::string, uint32_t>& stats, int byte_threshold, int msg_threshold, uint64_t max_pad_elems, size_t msg_count);
 
 void writeMat(const std::string& filepath, const std::string& var_name, const CollectedData& data, const std::vector<double>& timestamps);
 
