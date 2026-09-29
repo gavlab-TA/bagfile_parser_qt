@@ -15,8 +15,17 @@ permissions:
 
 jobs:
   linux:
-    name: Linux (.deb)
-    runs-on: ubuntu-22.04   # oldest supported glibc/Qt, so the .deb installs widely
+    name: Linux (.deb, ${{ matrix.arch }})
+    # 22.04 is the oldest supported glibc/Qt, so the .deb installs widely.
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -43,6 +52,9 @@ jobs:
           deb=$(ls dist/*.deb)
           echo "::group::metadata"; dpkg-deb -I "$deb"; echo "::endgroup::"
           echo "::group::contents"; dpkg-deb -c "$deb"; echo "::endgroup::"
+          # The runner decides the arch, so make sure we got the one we asked for.
+          got=$(dpkg-deb -f "$deb" Architecture)
+          [ "$got" = "${{ matrix.arch }}" ] || { echo "built a $got package, expected ${{ matrix.arch }}"; exit 1; }
           # Install it for real and confirm the binary runs.
           sudo apt-get update
           sudo apt-get install -y "./$deb"
@@ -54,7 +66,7 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: linux-deb
+          name: linux-deb-${{ matrix.arch }}
           path: dist/*
 
   macos:

@@ -13,7 +13,7 @@ build one yourself with a single command (see [Building a package](#building-a-p
 | Platform | Package | Install |
 |----------|---------|---------|
 | Windows 10/11 (x64) | `bagfile_parser_qt-<ver>-windows-x64.exe` | Run it. Adds a Start Menu entry and can put the CLI on your `PATH`. |
-| Ubuntu / Debian | `bagfile-parser-qt_<ver>_<arch>.deb` | `sudo apt install ./bagfile-parser-qt_<ver>_<arch>.deb` |
+| Ubuntu / Debian (amd64, arm64) | `bagfile-parser-qt_<ver>_<arch>.deb` | `sudo apt install ./bagfile-parser-qt_<ver>_<arch>.deb` |
 | macOS | `bagfile_parser_qt-macos-<arch>.dmg` | Open it, drag the app to Applications. |
 
 The Windows and macOS packages carry their own Qt, so nothing needs to be
