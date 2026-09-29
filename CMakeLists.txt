@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(bagfile_parser_qt VERSION 0.1.0 LANGUAGES CXX)
+project(bagfile_parser_qt VERSION 2.1 LANGUAGES CXX)
 
 # Lets CI stamp a release tag onto the packages without editing this file.
 set(BPQ_VERSION "" CACHE STRING "Override the version used for packaging")
